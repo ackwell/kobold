@@ -1,5 +1,22 @@
 module.exports = {
 	use: [
+		require('@neutrinojs/eslint')({
+			eslint: {
+				baseConfig: {
+					parser: '@typescript-eslint/parser',
+					plugins: [
+						'@typescript-eslint',
+						'prettier',
+					],
+					extends: [
+					],
+					rules: {
+						'prettier/prettier': 'error',
+					},
+				},
+			},
+		}),
+
 		require('@neutrinojs/node')({
 			hot: false,
 
