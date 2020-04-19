@@ -1,7 +1,7 @@
 {
-	"name": "@kobold/core",
+	"name": "@kobold/cli",
 	"version": "0.0.1",
-	"description": "Kobold core",
+	"description": "Kobold CLI",
 	"author": "ackwell",
 	"license": "MIT",
 	"scripts": {
