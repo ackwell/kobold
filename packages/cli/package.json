@@ -9,8 +9,11 @@
 		"build": "webpack --mode production",
 		"kobold": "node build"
 	},
-	"bin": {"kobold": "build/index.js"},
+	"bin": {
+		"kobold": "build/index.js"
+	},
 	"devDependencies": {
+		"@babel/preset-typescript": "^7.9.0",
 		"@neutrinojs/node": "^9.1.0",
 		"neutrino": "^9.1.0",
 		"webpack": "^4.42.1",
