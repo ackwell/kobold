@@ -1,0 +1,9 @@
+{
+	"includes": ["src/**/*"],
+	"compilerOptions": {
+		"strict": true,
+		"allowSyntheticDefaultImports": true,
+		"target": "esnext",
+		"module": "esnext",
+	}
+}
