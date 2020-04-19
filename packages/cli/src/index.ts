@@ -11,12 +11,18 @@ const sqpackPath =
 
 async function main() {
 	const repoDirs = await asyncReadDir(sqpackPath)
-	const repos = repoDirs.map(
-		repoDir =>
+	const repos = new Map<string, Repository>()
+	for (const repoDir of repoDirs) {
+		repos.set(
+			repoDir,
 			new Repository({
 				path: path.join(sqpackPath, repoDir),
 				name: repoDir,
 			}),
-	)
+		)
+	}
+
+	const arr = repos.get('ffxiv')
+	console.log(arr)
 }
 main()
