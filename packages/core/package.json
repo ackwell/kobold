@@ -1,0 +1,19 @@
+{
+	"name": "@kobold/core",
+	"version": "0.0.1",
+	"description": "Kobold core",
+	"author": "ackwell",
+	"license": "MIT",
+	"scripts": {
+		"start": "webpack --mode development --watch",
+		"build": "webpack --mode production",
+		"kobold": "node build"
+	},
+	"bin": {"kobold": "build/index.js"},
+	"devDependencies": {
+		"@neutrinojs/node": "^9.1.0",
+		"neutrino": "^9.1.0",
+		"webpack": "^4.42.1",
+		"webpack-cli": "^3.3.11"
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"name": "kobold",
+	"version": "0.0.1",
+	"description": "Kobold",
+	"author": "ackwell",
+	"license": "MIT",
+	"private": true,
+	"workspaces": ["packages/*"]
+}
