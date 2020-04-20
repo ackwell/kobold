@@ -1,23 +1,31 @@
 import {Repository} from './repository'
-
-class SqpackPath {
-	private path: string
-
-	constructor(opts: {path: string}) {
-		this.path = opts.path
-	}
-}
+import {assert} from './utilities'
 
 export class Kobold {
 	private repositories = new Map<string, Repository>()
+	private defaultRepository?: string
 
-	loadRepository(opts: {name: string; path: string}) {
+	loadRepository(opts: {name: string; path: string; default?: boolean}) {
 		this.repositories.set(opts.name, new Repository(opts))
+		if (opts.default) {
+			this.defaultRepository = opts.name
+		}
 	}
 
 	getFile(path: string) {
-		const filePath = new SqpackPath({path})
+		const segments = path.split('/') as Partial<string[]>
 
-		return filePath
+		const category = segments[0]
+		assert(category != null)
+
+		let repository = segments[1]
+		if (repository != null && !this.repositories.has(repository)) {
+			repository = this.defaultRepository
+		}
+		assert(repository != null)
+
+		const fileDetails = {category, repository}
+
+		return fileDetails
 	}
 }

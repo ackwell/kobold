@@ -14,7 +14,11 @@ async function main() {
 
 	const repoDirs = await asyncReadDir(sqpackPath)
 	for (const repoDir of repoDirs) {
-		kobold.loadRepository({name: repoDir, path: path.join(sqpackPath, repoDir)})
+		kobold.loadRepository({
+			name: repoDir,
+			path: path.join(sqpackPath, repoDir),
+			default: repoDir === 'ffxiv',
+		})
 	}
 
 	console.log(kobold)
@@ -22,4 +26,7 @@ async function main() {
 	const rootExl = kobold.getFile('exd/root.exl')
 	console.log(rootExl)
 }
-main()
+main().catch(e => {
+	console.error(e.stack)
+	process.exit(1)
+})
