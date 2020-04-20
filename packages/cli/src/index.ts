@@ -21,10 +21,7 @@ async function main() {
 		})
 	}
 
-	console.log(kobold)
-
 	const rootExl = kobold.getFile('exd/root.exl')
-	console.log(rootExl)
 }
 main().catch(e => {
 	console.error(e.stack)
