@@ -55,9 +55,28 @@ const sqpackIndexHeader = new Parser()
 		return this.size - (this.__current - this.__start)
 	})
 
+const indexHashTableEntry = new Parser()
+	.endianess('little')
+	.buffer('hash', {length: 8})
+	.bit1('isSynonym')
+	.bit3('dataFileId')
+	.bit28('offset')
+	.seek(4) // padding
+
 const sqpackIndex = new Parser()
 	.nest('sqpackHeader', {type: sqpackHeader})
 	.nest('sqpackIndexHeader', {type: sqpackIndexHeader})
+	.saveOffset('__current')
+	.seek(function () {
+		return this.sqpackIndexHeader.indexData.location - this.__current
+	})
+	.array('indexes', {
+		type: indexHashTableEntry,
+		lengthInBytes: function () {
+			// TODO: Fix types
+			return this.sqpackIndexHeader.indexData.size
+		},
+	})
 
 export class Category {
 	private categoryId: number
@@ -87,5 +106,6 @@ export class Category {
 		const parsed = sqpackIndex.parse(indexBuffer)
 
 		console.log(parsed)
+		// console.log(indexHashTableEntry.getCode())
 	}
 }
