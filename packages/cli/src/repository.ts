@@ -16,11 +16,12 @@ export class Repository {
 		let category = this.categories.get(path.category)
 		if (category == null) {
 			category = new Category({
+				categoryId: path.category,
 				repositoryPath: this.path,
 			})
 			this.categories.set(path.category, category)
 		}
 
-		console.log(`REPO(${this.name}): getFile ${path.path}:`, category)
+		category.getFile(path)
 	}
 }

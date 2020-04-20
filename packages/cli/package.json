@@ -13,7 +13,9 @@
 	"bin": {
 		"kobold": "build/index.js"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"fast-glob": "^3.2.2"
+	},
 	"devDependencies": {
 		"@babel/core": "^7.9.0",
 		"@babel/plugin-proposal-class-properties": "^7.8.3",
