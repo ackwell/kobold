@@ -3,8 +3,61 @@ import glob from 'fast-glob'
 import path from 'path'
 import fs from 'fs'
 import util from 'util'
+import {Parser} from 'binary-parser'
+
+// Contrib to DT? Looks like a lot of work might need to be done...
+declare module 'binary-parser' {
+	interface Parser<O> {
+		sizeOf(): number
+		seek(length: (this: Parser.Parsed<O>) => number): Parser<O>
+		saveOffset<N extends string>(name: N): Parser.Next<O, N, number>
+	}
+}
 
 const asyncReadFile = util.promisify(fs.readFile)
+
+const sqpackHeader = new Parser()
+	.endianess('little')
+	.saveOffset('__start')
+	.array('magic', {type: 'uint8', length: 8})
+	.uint8('platformId')
+	.seek(3) // unknown
+	.uint32('size')
+	.uint32('version')
+	.uint32('type')
+	// Skip the remainder of the size
+	.saveOffset('__current')
+	.seek(function () {
+		return this.size - (this.__current - this.__start)
+	})
+
+const lsd = new Parser()
+	.endianess('little')
+	.uint32('location')
+	.uint32('size')
+	.buffer('digest', {length: 64})
+
+const sqpackIndexHeader = new Parser()
+	.endianess('little')
+	.saveOffset('__start')
+	.uint32('size')
+	.uint32('version')
+	.nest('indexData', {type: lsd})
+	.uint32('dataFileCount')
+	.nest('synonymData', {type: lsd})
+	.nest('emptyBlockData', {type: lsd})
+	.nest('dirIndexData', {type: lsd})
+	.uint32('indexType')
+	.seek(656) // reserved
+	.buffer('selfHash', {length: 64})
+	.saveOffset('__current')
+	.seek(function () {
+		return this.size - (this.__current - this.__start)
+	})
+
+const sqpackIndex = new Parser()
+	.nest('sqpackHeader', {type: sqpackHeader})
+	.nest('sqpackIndexHeader', {type: sqpackIndexHeader})
 
 export class Category {
 	private categoryId: number
@@ -31,6 +84,8 @@ export class Category {
 
 		// lel
 		const indexBuffer = await asyncReadFile(tempIndexPath)
-		console.log(indexBuffer.slice(0, 8).toString())
+		const parsed = sqpackIndex.parse(indexBuffer)
+
+		console.log(parsed)
 	}
 }
