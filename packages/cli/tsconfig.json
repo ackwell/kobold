@@ -1,10 +1,17 @@
 {
 	"includes": ["src/**/*"],
 	"compilerOptions": {
-		"strict": true,
-		"allowSyntheticDefaultImports": true,
 		"target": "esnext",
 		"module": "esnext",
-		"moduleResolution": "node"
+		"moduleResolution": "node",
+
+		"declaration": true,
+		"stripInternal": true,
+		"declarationDir": "dist",
+
+		"strict": true,
+
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true
 	}
 }
