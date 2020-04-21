@@ -57,7 +57,7 @@ const sqpackIndexHeader = new Parser()
 
 const indexHashTableEntry = new Parser()
 	.endianess('little')
-	.buffer('hash', {length: 8})
+	.uint64('hash')
 	.bit1('isSynonym')
 	.bit3('dataFileId')
 	.bit28('offset')
@@ -72,10 +72,8 @@ const sqpackIndex = new Parser()
 	})
 	.array('indexes', {
 		type: indexHashTableEntry,
-		lengthInBytes: function () {
-			// TODO: Fix types
-			return this.sqpackIndexHeader.indexData.size
-		},
+		// TODO: would be nice to type this properly
+		lengthInBytes: 'sqpackIndexHeader.indexData.size',
 	})
 
 export class Category {
@@ -105,7 +103,14 @@ export class Category {
 		const indexBuffer = await asyncReadFile(tempIndexPath)
 		const parsed = sqpackIndex.parse(indexBuffer)
 
-		console.log(parsed)
-		// console.log(indexHashTableEntry.getCode())
+		// temp test
+		const hashes = new Set<bigint>()
+		for (const entry of parsed.indexes) {
+			hashes.add(entry.hash)
+		}
+
+		const index = pathInfo.index
+		console.log(index)
+		console.log(hashes.has(index))
 	}
 }
