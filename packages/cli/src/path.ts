@@ -13,7 +13,7 @@ export class Path {
 		this.path = opts.path
 	}
 
-	get index() {
+	get indexHash() {
 		if (this._index) {
 			return this._index
 		}

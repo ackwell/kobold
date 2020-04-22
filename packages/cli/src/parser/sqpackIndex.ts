@@ -56,7 +56,7 @@ const indexHashTableEntry = new Parser()
 	.bit3('dataFileId')
 	.bit28('offset')
 	.seek(4) // padding
-export type indexHashTableEntry = Parsed<typeof indexHashTableEntry>
+export type IndexHashTableEntry = Parsed<typeof indexHashTableEntry>
 
 const sqpackIndex = new Parser()
 	.nest('sqpackHeader', {type: sqpackHeader})

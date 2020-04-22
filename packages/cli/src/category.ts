@@ -3,20 +3,27 @@ import glob from 'fast-glob'
 import path from 'path'
 import fs from 'fs'
 import util from 'util'
-import {parseSqpackIndex} from './parser/sqpackIndex'
+import {parseSqpackIndex, IndexHashTableEntry} from './parser/sqpackIndex'
 
 const asyncReadFile = util.promisify(fs.readFile)
 
+// TODO: Most of this should be broken out into CategoryChunk handling
 export class Category {
-	private categoryId: number
-	private repositoryPath: string
+	private readonly categoryId: number
+	private readonly repositoryPath: string
+
+	private _indexes?: Promise<Map<bigint, IndexHashTableEntry>>
 
 	constructor(opts: {categoryId: number; repositoryPath: string}) {
 		this.categoryId = opts.categoryId
 		this.repositoryPath = opts.repositoryPath
 	}
 
-	async getFile(pathInfo: Path) {
+	private async buildIndexes() {
+		if (this._indexes != null) {
+			return this._indexes
+		}
+
 		// Find index files
 		const idPrefix = this.categoryId.toString(16).padStart(2, '0').slice(0, 2)
 		// const indexFiles = await glob(`${idPrefix}????.*.index{2,}`, {
@@ -25,25 +32,37 @@ export class Category {
 			caseSensitiveMatch: false,
 		})
 
-		// TODO: Check > 0 index
+		// TODO: Check > 0 index (chunks)
 
 		const tempIndexFname = indexFiles[0]
 		const tempIndexPath = path.join(this.repositoryPath, tempIndexFname)
 
-		// lel
 		const indexBuffer = await asyncReadFile(tempIndexPath)
 		const parsed = parseSqpackIndex(indexBuffer)
 
-		// temp test
-		const hashes = new Map<bigint, number>()
+		const indexes = new Map<bigint, IndexHashTableEntry>()
 		for (const entry of parsed.indexes) {
-			hashes.set(entry.hash, entry.offset)
+			indexes.set(entry.hash, entry)
 		}
 
-		const offset = hashes.get(pathInfo.index)
-		if (offset) {
+		return indexes
+	}
+
+	private getIndexes() {
+		if (this._indexes == null) {
+			this._indexes = this.buildIndexes()
+		}
+
+		return this._indexes
+	}
+
+	async getFile(pathInfo: Path) {
+		const indexes = await this.getIndexes()
+		const entry = indexes.get(pathInfo.indexHash)
+		if (entry) {
 			console.log(
-				`found offset for ${pathInfo.path} (${pathInfo.index}): ${offset}`,
+				`found offset for ${pathInfo.path} (${pathInfo.indexHash}):`,
+				entry,
 			)
 		}
 	}
