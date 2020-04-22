@@ -3,7 +3,7 @@ import glob from 'fast-glob'
 import path from 'path'
 import fs from 'fs'
 import util from 'util'
-import {parseSqpackIndex, IndexHashTableEntry} from './parser/sqpackIndex'
+import {parseSqPackIndex, IndexHashTableEntry} from './parser/sqPackIndex'
 
 const asyncReadFile = util.promisify(fs.readFile)
 
@@ -38,7 +38,7 @@ export class Category {
 		const tempIndexPath = path.join(this.repositoryPath, tempIndexFname)
 
 		const indexBuffer = await asyncReadFile(tempIndexPath)
-		const parsed = parseSqpackIndex(indexBuffer)
+		const parsed = parseSqPackIndex(indexBuffer)
 
 		const indexes = new Map<bigint, IndexHashTableEntry>()
 		for (const entry of parsed.indexes) {

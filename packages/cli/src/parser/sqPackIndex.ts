@@ -7,7 +7,7 @@ type InternalKeys = '__start' | '__current'
 
 type Parsed<P extends Parser<any>> = Omit<ReturnType<P['parse']>, InternalKeys>
 
-const sqpackHeader = new Parser()
+const sqPackHeader = new Parser()
 	.endianess('little')
 	.saveOffset('__start')
 	.array('magic', {type: 'uint8', length: 8})
@@ -21,7 +21,7 @@ const sqpackHeader = new Parser()
 	.seek(function () {
 		return this.size - (this.__current - this.__start)
 	})
-export type SqpackHeader = Parsed<typeof sqpackHeader>
+export type SqPackHeader = Parsed<typeof sqPackHeader>
 
 const lsd = new Parser()
 	.endianess('little')
@@ -30,7 +30,7 @@ const lsd = new Parser()
 	.buffer('digest', {length: 64})
 export type LSD = Parsed<typeof lsd>
 
-const sqpackIndexHeader = new Parser()
+const sqPackIndexHeader = new Parser()
 	.endianess('little')
 	.saveOffset('__start')
 	.uint32('size')
@@ -47,7 +47,7 @@ const sqpackIndexHeader = new Parser()
 	.seek(function () {
 		return this.size - (this.__current - this.__start)
 	})
-export type SqpackIndexHeader = Parsed<typeof sqpackIndexHeader>
+export type SqPackIndexHeader = Parsed<typeof sqPackIndexHeader>
 
 const indexHashTableEntry = new Parser()
 	.endianess('little')
@@ -58,19 +58,19 @@ const indexHashTableEntry = new Parser()
 	.seek(4) // padding
 export type IndexHashTableEntry = Parsed<typeof indexHashTableEntry>
 
-const sqpackIndex = new Parser()
-	.nest('sqpackHeader', {type: sqpackHeader})
-	.nest('sqpackIndexHeader', {type: sqpackIndexHeader})
+const sqPackIndex = new Parser()
+	.nest('sqPackHeader', {type: sqPackHeader})
+	.nest('sqPackIndexHeader', {type: sqPackIndexHeader})
 	.saveOffset('__current')
 	.seek(function () {
-		return this.sqpackIndexHeader.indexData.location - this.__current
+		return this.sqPackIndexHeader.indexData.location - this.__current
 	})
 	.array('indexes', {
 		type: indexHashTableEntry,
 		// TODO: would be nice to type this properly
-		lengthInBytes: 'sqpackIndexHeader.indexData.size',
+		lengthInBytes: 'sqPackIndexHeader.indexData.size',
 	})
-export type SqpackIndex = Parsed<typeof sqpackIndex>
+export type SqPackIndex = Parsed<typeof sqPackIndex>
 
-export const parseSqpackIndex = (buffer: Buffer): SqpackIndex =>
-	sqpackIndex.parse(buffer)
+export const parseSqPackIndex = (buffer: Buffer): SqPackIndex =>
+	sqPackIndex.parse(buffer)
