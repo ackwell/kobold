@@ -54,7 +54,19 @@ const indexHashTableEntry = new Parser()
 	.uint64('hash')
 	.bit1('isSynonym')
 	.bit3('dataFileId')
-	.bit28('offset')
+	.bit28('offset', {
+		// Square's doing a smart thing and storing a uint32 in 28 bits, as the last 4 are always 0 and can be used for the bitfield above.
+		// binary parser also totally ignores my endianess setting for bit fields which is fucking lovely of it, hence the swap. it's inlined because otherwise it can't find it because lmao exec()
+		// oh and the offset is stored as a count of bytes so gotta multiply that trash
+		formatter: data => {
+			const swap32 = (val: number) =>
+				((val & 0xff) << 24) |
+				((val & 0xff00) << 8) |
+				((val >> 8) & 0xff00) |
+				((val >> 24) & 0xff)
+			return swap32(((data as unknown) as number) << 4) * 8
+		},
+	})
 	.seek(4) // padding
 export type IndexHashTableEntry = Parsed<typeof indexHashTableEntry>
 
@@ -74,3 +86,4 @@ export type SqPackIndex = Parsed<typeof sqPackIndex>
 
 export const parseSqPackIndex = (buffer: Buffer): SqPackIndex =>
 	sqPackIndex.parse(buffer)
+// indexHashTableEntry.getCode()
