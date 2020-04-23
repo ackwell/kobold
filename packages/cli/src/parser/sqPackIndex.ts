@@ -59,12 +59,9 @@ const indexHashTableEntryParser = new Parser()
 		// binary parser also totally ignores my endianess setting for bit fields which is fucking lovely of it, hence the swap. it's inlined because otherwise it can't find it because lmao exec()
 		// oh and the offset is stored as a count of bytes so gotta multiply that trash
 		formatter: data => {
-			const swap32 = (val: number) =>
-				((val & 0xff) << 24) |
-				((val & 0xff00) << 8) |
-				((val >> 8) & 0xff00) |
-				((val >> 24) & 0xff)
-			return swap32(((data as unknown) as number) << 4) * 8
+			const buf = new Buffer(4)
+			buf.writeUInt32BE((((data as unknown) as number) << 4) >>> 0)
+			return buf.readInt32LE() * 8
 		},
 	})
 	.seek(4) // padding

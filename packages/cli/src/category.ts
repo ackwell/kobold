@@ -14,14 +14,18 @@ import {
 	BlockInfo,
 } from './parser/sqPackDat'
 
-const asyncReadFile = util.promisify(fs.readFile)
-const asyncOpen = util.promisify(fs.open)
-const asyncClose = util.promisify(fs.close)
-const asyncRead = util.promisify(fs.read)
-const asyncInflateRaw = util.promisify(zlib.inflateRaw)
+const async = {
+	fs: {
+		readFile: util.promisify(fs.readFile),
+		open: util.promisify(fs.open),
+		close: util.promisify(fs.close),
+		read: util.promisify(fs.read),
+	},
+	zlib: {inflateRaw: util.promisify(zlib.inflateRaw)},
+}
 
 const asyncReadBuffer = (fd: number, length: number, offset: number) =>
-	asyncRead(fd, Buffer.alloc(length), 0, length, offset)
+	async.fs.read(fd, Buffer.alloc(length), 0, length, offset)
 
 // TODO: Most of this should be broken out into CategoryChunk handling
 export class Category {
@@ -56,7 +60,7 @@ export class Category {
 		const tempIndexFname = indexFiles[0]
 		const tempIndexPath = path.join(this.repositoryPath, tempIndexFname)
 
-		const indexBuffer = await asyncReadFile(tempIndexPath)
+		const indexBuffer = await async.fs.readFile(tempIndexPath)
 		const parsed = sqPackIndexParser.parse(indexBuffer)
 
 		const indexes = new Map<bigint, IndexHashTableEntry>()
@@ -89,7 +93,7 @@ export class Category {
 		)
 
 		// TODO: do all of this stuff properly
-		const fd = await asyncOpen(
+		const fd = await async.fs.open(
 			path.join(
 				this.repositoryPath,
 				`${this.idPrefix}0000.win32.dat${entry.dataFileId}`,
@@ -136,12 +140,11 @@ export class Category {
 		)
 		const blocks = await Promise.all(blockPromises)
 
-		// TODO: precalc length from info?
-		const fileBuffer = Buffer.concat(blocks)
+		const fileBuffer = Buffer.concat(blocks, fileInfo.rawFileSize)
 		console.log('file:', fileBuffer.toString())
 
 		// TODO: Cache FDs?
-		await asyncClose(fd)
+		await async.fs.close(fd)
 	}
 
 	private async readBlock(
@@ -169,6 +172,6 @@ export class Category {
 
 		console.log('block data:', blockData)
 
-		return asyncInflateRaw(blockData) as Promise<Buffer>
+		return async.zlib.inflateRaw(blockData) as Promise<Buffer>
 	}
 }
