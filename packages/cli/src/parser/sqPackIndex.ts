@@ -7,7 +7,7 @@ type InternalKeys = '__start' | '__current'
 
 type Parsed<P extends Parser<any>> = Omit<ReturnType<P['parse']>, InternalKeys>
 
-const sqPackHeader = new Parser()
+const sqPackHeaderParser = new Parser()
 	.endianess('little')
 	.saveOffset('__start')
 	.array('magic', {type: 'uint8', length: 8})
@@ -21,25 +21,25 @@ const sqPackHeader = new Parser()
 	.seek(function () {
 		return this.size - (this.__current - this.__start)
 	})
-export type SqPackHeader = Parsed<typeof sqPackHeader>
+export type SqPackHeader = Parsed<typeof sqPackHeaderParser>
 
-const lsd = new Parser()
+const lsdParser = new Parser()
 	.endianess('little')
 	.uint32('location')
 	.uint32('size')
 	.buffer('digest', {length: 64})
-export type LSD = Parsed<typeof lsd>
+export type LSD = Parsed<typeof lsdParser>
 
-const sqPackIndexHeader = new Parser()
+const sqPackIndexHeaderParser = new Parser()
 	.endianess('little')
 	.saveOffset('__start')
 	.uint32('size')
 	.uint32('version')
-	.nest('indexData', {type: lsd})
+	.nest('indexData', {type: lsdParser})
 	.uint32('dataFileCount')
-	.nest('synonymData', {type: lsd})
-	.nest('emptyBlockData', {type: lsd})
-	.nest('dirIndexData', {type: lsd})
+	.nest('synonymData', {type: lsdParser})
+	.nest('emptyBlockData', {type: lsdParser})
+	.nest('dirIndexData', {type: lsdParser})
 	.uint32('indexType')
 	.seek(656) // reserved
 	.buffer('selfHash', {length: 64})
@@ -47,9 +47,9 @@ const sqPackIndexHeader = new Parser()
 	.seek(function () {
 		return this.size - (this.__current - this.__start)
 	})
-export type SqPackIndexHeader = Parsed<typeof sqPackIndexHeader>
+export type SqPackIndexHeader = Parsed<typeof sqPackIndexHeaderParser>
 
-const indexHashTableEntry = new Parser()
+const indexHashTableEntryParser = new Parser()
 	.endianess('little')
 	.uint64('hash')
 	.bit1('isSynonym')
@@ -68,22 +68,18 @@ const indexHashTableEntry = new Parser()
 		},
 	})
 	.seek(4) // padding
-export type IndexHashTableEntry = Parsed<typeof indexHashTableEntry>
+export type IndexHashTableEntry = Parsed<typeof indexHashTableEntryParser>
 
-const sqPackIndex = new Parser()
-	.nest('sqPackHeader', {type: sqPackHeader})
-	.nest('sqPackIndexHeader', {type: sqPackIndexHeader})
+export const sqPackIndexParser = new Parser()
+	.nest('sqPackHeader', {type: sqPackHeaderParser})
+	.nest('sqPackIndexHeader', {type: sqPackIndexHeaderParser})
 	.saveOffset('__current')
 	.seek(function () {
 		return this.sqPackIndexHeader.indexData.location - this.__current
 	})
 	.array('indexes', {
-		type: indexHashTableEntry,
+		type: indexHashTableEntryParser,
 		// TODO: would be nice to type this properly
 		lengthInBytes: 'sqPackIndexHeader.indexData.size',
 	})
-export type SqPackIndex = Parsed<typeof sqPackIndex>
-
-export const parseSqPackIndex = (buffer: Buffer): SqPackIndex =>
-	sqPackIndex.parse(buffer)
-// indexHashTableEntry.getCode()
+export type SqPackIndex = Parsed<typeof sqPackIndexParser>

@@ -3,10 +3,16 @@ import glob from 'fast-glob'
 import path from 'path'
 import fs from 'fs'
 import util from 'util'
-import {parseSqPackIndex, IndexHashTableEntry} from './parser/sqPackIndex'
-import {Parser} from 'binary-parser'
+import {IndexHashTableEntry, sqPackIndexParser} from './parser/sqPackIndex'
 import {assert} from './utilities'
 import zlib from 'zlib'
+import {
+	fileInfoParser,
+	FileType,
+	blockInfoParser,
+	blockHeaderParser,
+	BlockInfo,
+} from './parser/sqPackDat'
 
 const asyncReadFile = util.promisify(fs.readFile)
 const asyncOpen = util.promisify(fs.open)
@@ -14,34 +20,8 @@ const asyncClose = util.promisify(fs.close)
 const asyncRead = util.promisify(fs.read)
 const asyncInflateRaw = util.promisify(zlib.inflateRaw)
 
-const sqPackFileInfo = new Parser()
-	.endianess('little')
-	.uint32('size')
-	.uint32('type')
-	.uint32('rawFileSize')
-	.seek(8) // unknown
-	.uint32('blockCount')
-
-const blockInfoParser = new Parser()
-	.endianess('little')
-	.uint32('offset')
-	.uint16('size')
-	.uint16('uncompressedSize')
-type BlockInfo = ReturnType<typeof blockInfoParser.parse>
-
-const blockHeaderParser = new Parser()
-	.endianess('little')
-	.uint32('size')
-	.skip(4) // uint32 unknown1
-	.uint32('compressedSize')
-	.uint32('uncompressedSize')
-
-enum FileType {
-	EMPTY = 1,
-	STANDARD = 2,
-	MODEL = 3,
-	TEXTURE = 4,
-}
+const asyncReadBuffer = (fd: number, length: number, offset: number) =>
+	asyncRead(fd, Buffer.alloc(length), 0, length, offset)
 
 // TODO: Most of this should be broken out into CategoryChunk handling
 export class Category {
@@ -77,7 +57,7 @@ export class Category {
 		const tempIndexPath = path.join(this.repositoryPath, tempIndexFname)
 
 		const indexBuffer = await asyncReadFile(tempIndexPath)
-		const parsed = parseSqPackIndex(indexBuffer)
+		const parsed = sqPackIndexParser.parse(indexBuffer)
 
 		const indexes = new Map<bigint, IndexHashTableEntry>()
 		for (const entry of parsed.indexes) {
@@ -117,15 +97,13 @@ export class Category {
 			'r',
 		)
 
-		const fileInfoSize = sqPackFileInfo.sizeOf()
-		const {buffer: fileInfoBuffer} = await asyncRead(
+		const fileInfoSize = fileInfoParser.sizeOf()
+		const {buffer: fileInfoBuffer} = await asyncReadBuffer(
 			fd,
-			Buffer.alloc(fileInfoSize),
-			0,
 			fileInfoSize,
 			entry.offset,
 		)
-		const fileInfo = sqPackFileInfo.parse(fileInfoBuffer)
+		const fileInfo = fileInfoParser.parse(fileInfoBuffer)
 		console.log('file info:', fileInfo)
 
 		assert(
@@ -135,10 +113,8 @@ export class Category {
 
 		const blockInfoSize = blockInfoParser.sizeOf()
 		const blockInfoGroupSize = blockInfoSize * fileInfo.blockCount
-		const {buffer: blockInfoBuffer} = await asyncRead(
+		const {buffer: blockInfoBuffer} = await asyncReadBuffer(
 			fd,
-			Buffer.alloc(blockInfoGroupSize),
-			0,
 			blockInfoGroupSize,
 			entry.offset + fileInfoSize,
 		)
@@ -173,10 +149,8 @@ export class Category {
 		fd: number,
 		baseOffset: number,
 	) {
-		const {buffer: blockBuffer} = await asyncRead(
+		const {buffer: blockBuffer} = await asyncReadBuffer(
 			fd,
-			Buffer.alloc(blockInfo.size),
-			0,
 			blockInfo.size,
 			baseOffset + blockInfo.offset,
 		)
