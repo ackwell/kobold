@@ -27,6 +27,7 @@ const blockInfoParser = new Parser()
 	.uint32('offset')
 	.uint16('size')
 	.uint16('uncompressedSize')
+type BlockInfo = ReturnType<typeof blockInfoParser.parse>
 
 const blockHeaderParser = new Parser()
 	.endianess('little')
@@ -154,17 +155,30 @@ export class Category {
 
 		console.log('block info:', blockInfos)
 
-		// TODO: Read in the full block set? or would it be better to read each block independantly and decompress in parallel at the same time?
-		// Only reading one block for now
+		const blockPromises = blockInfos.map(blockInfo =>
+			this.readBlock(blockInfo, fd, entry.offset + fileInfo.size),
+		)
+		const blocks = await Promise.all(blockPromises)
 
-		const blockInfo = blockInfos[0]
+		// TODO: precalc length from info?
+		const fileBuffer = Buffer.concat(blocks)
+		console.log('file:', fileBuffer.toString())
 
+		// TODO: Cache FDs?
+		await asyncClose(fd)
+	}
+
+	private async readBlock(
+		blockInfo: BlockInfo,
+		fd: number,
+		baseOffset: number,
+	) {
 		const {buffer: blockBuffer} = await asyncRead(
 			fd,
 			Buffer.alloc(blockInfo.size),
 			0,
 			blockInfo.size,
-			entry.offset + fileInfo.size + blockInfo.offset,
+			baseOffset + blockInfo.offset,
 		)
 
 		const blockHeader = blockHeaderParser.parse(blockBuffer)
@@ -181,10 +195,6 @@ export class Category {
 
 		console.log('block data:', blockData)
 
-		const foo = (await asyncInflateRaw(blockData)) as Buffer
-		console.log(foo.toString())
-
-		// TODO: Cache FDs?
-		await asyncClose(fd)
+		return asyncInflateRaw(blockData) as Promise<Buffer>
 	}
 }
