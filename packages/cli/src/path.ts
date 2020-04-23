@@ -6,6 +6,7 @@ export class Path {
 	readonly path: string
 
 	private _index?: bigint
+	private _index2?: bigint
 
 	constructor(opts: {category: number; repository: string; path: string}) {
 		this.category = opts.category
@@ -18,7 +19,6 @@ export class Path {
 			return this._index
 		}
 
-		// todo: cache
 		const lastSlash = this.path.lastIndexOf('/')
 		const folder = this.path.substr(0, lastSlash)
 		const file = this.path.substr(lastSlash + 1)
@@ -29,5 +29,15 @@ export class Path {
 		const index = (folderHash << 32n) | fileHash
 		this._index = index
 		return index
+	}
+
+	get index2Hash() {
+		if (this._index2) {
+			return this._index2
+		}
+
+		const index2 = crc(this.path)
+		this._index2 = index2
+		return index2
 	}
 }

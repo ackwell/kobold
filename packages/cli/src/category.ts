@@ -3,7 +3,11 @@ import glob from 'fast-glob'
 import path from 'path'
 import fs from 'fs'
 import util from 'util'
-import {IndexHashTableEntry, sqPackIndexParser} from './parser/sqPackIndex'
+import {
+	sqPackIndexParser,
+	sqPackIndex2Parser,
+	HashTablePackedOffset,
+} from './parser/sqPackIndex'
 import {assert} from './utilities'
 import zlib from 'zlib'
 import {
@@ -27,12 +31,19 @@ const async = {
 const asyncReadBuffer = (fd: number, length: number, offset: number) =>
 	async.fs.read(fd, Buffer.alloc(length), 0, length, offset)
 
+enum IndexType {
+	INDEX,
+	INDEX2,
+}
+
+type IndexMap = Map<bigint, HashTablePackedOffset>
+
 // TODO: Most of this should be broken out into CategoryChunk handling
 export class Category {
 	private readonly categoryId: number
 	private readonly repositoryPath: string
 
-	private _indexes?: Promise<Map<bigint, IndexHashTableEntry>>
+	private indexCache = new Map<IndexType, Promise<IndexMap>>()
 
 	constructor(opts: {categoryId: number; repositoryPath: string}) {
 		this.categoryId = opts.categoryId
@@ -43,45 +54,54 @@ export class Category {
 		return this.categoryId.toString(16).padStart(2, '0').slice(0, 2)
 	}
 
-	private async buildIndexes() {
-		if (this._indexes != null) {
-			return this._indexes
-		}
-
+	private async buildIndexes(type: IndexType) {
+		const extension = type === IndexType.INDEX ? 'index' : 'index2'
 		// Find index files
-		// const indexFiles = await glob(`${idPrefix}????.*.index{2,}`, {
-		const indexFiles = await glob(`${this.idPrefix}????.*.index`, {
+		const indexFiles = await glob(`${this.idPrefix}????.*.${extension}`, {
 			cwd: this.repositoryPath,
 			caseSensitiveMatch: false,
 		})
 
-		// TODO: Check > 0 index (chunks)
+		// TODO: Check > 0 index
+		assert(indexFiles.length === 1, 'TODO: Handle multiple chunks')
 
-		const tempIndexFname = indexFiles[0]
-		const tempIndexPath = path.join(this.repositoryPath, tempIndexFname)
+		const indexPath = path.join(this.repositoryPath, indexFiles[0])
+		const indexBuffer = await async.fs.readFile(indexPath)
 
-		const indexBuffer = await async.fs.readFile(tempIndexPath)
-		const parsed = sqPackIndexParser.parse(indexBuffer)
+		const parser =
+			type === IndexType.INDEX ? sqPackIndexParser : sqPackIndex2Parser
+		const parsed = parser.parse(indexBuffer)
 
-		const indexes = new Map<bigint, IndexHashTableEntry>()
+		const indexes = new Map<bigint, HashTablePackedOffset>()
 		for (const entry of parsed.indexes) {
-			indexes.set(entry.hash, entry)
+			const key =
+				typeof entry.hash === 'bigint' ? entry.hash : BigInt(entry.hash)
+			indexes.set(key, entry)
 		}
 
 		return indexes
 	}
 
-	private getIndexes() {
-		if (this._indexes == null) {
-			this._indexes = this.buildIndexes()
+	private getIndexes(type: IndexType) {
+		let indexPromise = this.indexCache.get(type)
+		if (indexPromise == null) {
+			indexPromise = this.buildIndexes(type)
+			this.indexCache.set(type, indexPromise)
 		}
 
-		return this._indexes
+		return indexPromise
+	}
+
+	private async getFileEntry(pathInfo: Path) {
+		const entry =
+			(await this.getIndexes(IndexType.INDEX)).get(pathInfo.indexHash) ??
+			(await this.getIndexes(IndexType.INDEX2)).get(pathInfo.index2Hash)
+		return entry
 	}
 
 	async getFile(pathInfo: Path) {
-		const indexes = await this.getIndexes()
-		const entry = indexes.get(pathInfo.indexHash)
+		// const indexes = await this.getIndexes()
+		const entry = await this.getFileEntry(pathInfo)
 		if (entry == null) {
 			// TODO: ?
 			return

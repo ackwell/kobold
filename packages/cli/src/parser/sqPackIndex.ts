@@ -49,9 +49,8 @@ const sqPackIndexHeaderParser = new Parser()
 	})
 export type SqPackIndexHeader = Parsed<typeof sqPackIndexHeaderParser>
 
-const indexHashTableEntryParser = new Parser()
+const hashTablePackedOffsetParser = new Parser()
 	.endianess('little')
-	.uint64('hash')
 	.bit1('isSynonym')
 	.bit3('dataFileId')
 	.bit28('offset', {
@@ -64,8 +63,19 @@ const indexHashTableEntryParser = new Parser()
 			return buf.readInt32LE() * 8
 		},
 	})
+export type HashTablePackedOffset = Parsed<typeof hashTablePackedOffsetParser>
+
+const indexHashTableEntryParser = new Parser()
+	.endianess('little')
+	.uint64('hash')
+	.nest<HashTablePackedOffset>({type: hashTablePackedOffsetParser})
 	.seek(4) // padding
 export type IndexHashTableEntry = Parsed<typeof indexHashTableEntryParser>
+
+const index2HashTableEntryParser = new Parser()
+	.endianess('little')
+	.uint32('hash')
+	.nest<HashTablePackedOffset>({type: hashTablePackedOffsetParser})
 
 export const sqPackIndexParser = new Parser()
 	.nest('sqPackHeader', {type: sqPackHeaderParser})
@@ -80,3 +90,15 @@ export const sqPackIndexParser = new Parser()
 		lengthInBytes: 'sqPackIndexHeader.indexData.size',
 	})
 export type SqPackIndex = Parsed<typeof sqPackIndexParser>
+
+export const sqPackIndex2Parser = new Parser()
+	.nest('sqPackHeader', {type: sqPackHeaderParser})
+	.nest('sqPackIndexHeader', {type: sqPackIndexHeaderParser})
+	.saveOffset('__current')
+	.seek(function () {
+		return this.sqPackIndexHeader.indexData.location - this.__current
+	})
+	.array('indexes', {
+		type: index2HashTableEntryParser,
+		lengthInBytes: 'sqPackIndexHeader.indexData.size',
+	})
