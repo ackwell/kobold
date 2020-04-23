@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import util from 'util'
 import {Kobold} from './kobold'
+import {assert} from './utilities'
 
 const asyncReadDir = util.promisify(fs.readdir)
 
@@ -40,7 +41,9 @@ async function main() {
 		})
 	}
 
-	const rootExl = kobold.getFile('exd/root.exl')
+	const rootExl = await kobold.getFile('exd/root.exl')
+	assert(rootExl != null)
+	console.log(rootExl.toString())
 }
 main().catch(e => {
 	console.error(e.stack)

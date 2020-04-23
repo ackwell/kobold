@@ -29,7 +29,8 @@ export class Kobold {
 		const repository = this.repositories.get(path.repository)
 		assert(repository != null)
 
-		repository.getFile(path)
+		// TODO: Map file buffer to a file type reader?
+		return repository.getFile(path)
 	}
 
 	private parsePath(path: string): Path {

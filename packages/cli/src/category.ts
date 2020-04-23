@@ -93,6 +93,8 @@ export class Category {
 	}
 
 	private async getFileEntry(pathInfo: Path) {
+		// TODO: Consider if both indexes should be preloaded. As-is, we're lazy loading both,
+		// so a theoretical lookup that's only in index2 would have two sequential lookups, not parallel
 		const entry =
 			(await this.getIndexes(IndexType.INDEX)).get(pathInfo.indexHash) ??
 			(await this.getIndexes(IndexType.INDEX2)).get(pathInfo.index2Hash)
@@ -161,10 +163,12 @@ export class Category {
 		const blocks = await Promise.all(blockPromises)
 
 		const fileBuffer = Buffer.concat(blocks, fileInfo.rawFileSize)
-		console.log('file:', fileBuffer.toString())
 
 		// TODO: Cache FDs?
-		await async.fs.close(fd)
+		// Close the FD - no await as timing of close is irrelevant
+		async.fs.close(fd)
+
+		return fileBuffer
 	}
 
 	private async readBlock(

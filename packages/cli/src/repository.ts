@@ -22,6 +22,6 @@ export class Repository {
 			this.categories.set(path.category, category)
 		}
 
-		category.getFile(path)
+		return category.getFile(path)
 	}
 }
