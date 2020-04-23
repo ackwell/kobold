@@ -20,11 +20,18 @@ const sqPackFileInfo = new Parser()
 	.seek(8) // unknown
 	.uint32('blockCount')
 
-const blockInfo = new Parser()
+const blockInfoParser = new Parser()
 	.endianess('little')
 	.uint32('offset')
 	.uint16('size')
 	.uint16('uncompressedSize')
+
+const blockHeaderParser = new Parser()
+	.endianess('little')
+	.uint32('size')
+	.skip(4) // uint32 unknown1
+	.uint32('compressedSize')
+	.uint32('uncompressedSize')
 
 enum FileType {
 	EMPTY = 1,
@@ -123,13 +130,13 @@ export class Category {
 			'TODO: Better handling for file types',
 		)
 
-		const blockInfoSize = blockInfo.sizeOf()
-		const blockInfoBuffSize = blockInfoSize * fileInfo.blockCount
+		const blockInfoSize = blockInfoParser.sizeOf()
+		const blockInfoGroupSize = blockInfoSize * fileInfo.blockCount
 		const {buffer: blockInfoBuffer} = await asyncRead(
 			fd,
-			Buffer.alloc(blockInfoBuffSize),
+			Buffer.alloc(blockInfoGroupSize),
 			0,
-			blockInfoBuffSize,
+			blockInfoGroupSize,
 			entry.offset + fileInfoSize,
 		)
 
@@ -137,11 +144,40 @@ export class Category {
 		for (let i = 0; i < fileInfo.blockCount; i++) {
 			const begin = blockInfoSize * i
 			blockInfos.push(
-				blockInfo.parse(blockInfoBuffer.subarray(begin, begin + blockInfoSize)),
+				blockInfoParser.parse(
+					blockInfoBuffer.subarray(begin, begin + blockInfoSize),
+				),
 			)
 		}
 
 		console.log('block info:', blockInfos)
+
+		// TODO: Read in the full block set? or would it be better to read each block independantly and decompress in parallel at the same time?
+		// Only reading one block for now
+
+		const blockInfo = blockInfos[0]
+
+		const {buffer: blockBuffer} = await asyncRead(
+			fd,
+			Buffer.alloc(blockInfo.size),
+			0,
+			blockInfo.size,
+			entry.offset + fileInfo.size + blockInfo.offset,
+		)
+
+		const blockHeader = blockHeaderParser.parse(blockBuffer)
+		console.log('block header:', blockHeader)
+
+		// Adam is using 32000 as some marker for uncompressed blocks - asserting here so if it is, i can inspect what's going on for curiosity's sake
+		assert(blockHeader.compressedSize !== 32000)
+
+		// const blockHeaderSize = blockHeaderParser.sizeOf()
+		const blockData = blockBuffer.subarray(
+			blockHeader.size,
+			blockHeader.size + blockHeader.compressedSize,
+		)
+
+		console.log('block data:', blockData)
 
 		// TODO: Cache FDs?
 		await asyncClose(fd)
