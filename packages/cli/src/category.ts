@@ -20,6 +20,12 @@ const sqPackFileInfo = new Parser()
 	.seek(8) // unknown
 	.uint32('blockCount')
 
+const blockInfo = new Parser()
+	.endianess('little')
+	.uint32('offset')
+	.uint16('size')
+	.uint16('uncompressedSize')
+
 enum FileType {
 	EMPTY = 1,
 	STANDARD = 2,
@@ -102,20 +108,40 @@ export class Category {
 		)
 
 		const fileInfoSize = sqPackFileInfo.sizeOf()
-		const {buffer} = await asyncRead(
+		const {buffer: fileInfoBuffer} = await asyncRead(
 			fd,
 			Buffer.alloc(fileInfoSize),
 			0,
 			fileInfoSize,
 			entry.offset,
 		)
-		const fileInfo = sqPackFileInfo.parse(buffer)
+		const fileInfo = sqPackFileInfo.parse(fileInfoBuffer)
 		console.log('file info:', fileInfo)
 
 		assert(
 			fileInfo.type === FileType.STANDARD,
 			'TODO: Better handling for file types',
 		)
+
+		const blockInfoSize = blockInfo.sizeOf()
+		const blockInfoBuffSize = blockInfoSize * fileInfo.blockCount
+		const {buffer: blockInfoBuffer} = await asyncRead(
+			fd,
+			Buffer.alloc(blockInfoBuffSize),
+			0,
+			blockInfoBuffSize,
+			entry.offset + fileInfoSize,
+		)
+
+		const blockInfos = []
+		for (let i = 0; i < fileInfo.blockCount; i++) {
+			const begin = blockInfoSize * i
+			blockInfos.push(
+				blockInfo.parse(blockInfoBuffer.subarray(begin, begin + blockInfoSize)),
+			)
+		}
+
+		console.log('block info:', blockInfos)
 
 		// TODO: Cache FDs?
 		await asyncClose(fd)
