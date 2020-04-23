@@ -4,8 +4,28 @@ import path from 'path'
 import fs from 'fs'
 import util from 'util'
 import {parseSqPackIndex, IndexHashTableEntry} from './parser/sqPackIndex'
+import {Parser} from 'binary-parser'
+import {assert} from './utilities'
 
 const asyncReadFile = util.promisify(fs.readFile)
+const asyncOpen = util.promisify(fs.open)
+const asyncClose = util.promisify(fs.close)
+const asyncRead = util.promisify(fs.read)
+
+const sqPackFileInfo = new Parser()
+	.endianess('little')
+	.uint32('size')
+	.uint32('type')
+	.uint32('rawFileSize')
+	.seek(8) // unknown
+	.uint32('blockCount')
+
+enum FileType {
+	EMPTY = 1,
+	STANDARD = 2,
+	MODEL = 3,
+	TEXTURE = 4,
+}
 
 // TODO: Most of this should be broken out into CategoryChunk handling
 export class Category {
@@ -19,15 +39,18 @@ export class Category {
 		this.repositoryPath = opts.repositoryPath
 	}
 
+	private get idPrefix() {
+		return this.categoryId.toString(16).padStart(2, '0').slice(0, 2)
+	}
+
 	private async buildIndexes() {
 		if (this._indexes != null) {
 			return this._indexes
 		}
 
 		// Find index files
-		const idPrefix = this.categoryId.toString(16).padStart(2, '0').slice(0, 2)
 		// const indexFiles = await glob(`${idPrefix}????.*.index{2,}`, {
-		const indexFiles = await glob(`${idPrefix}????.*.index`, {
+		const indexFiles = await glob(`${this.idPrefix}????.*.index`, {
 			cwd: this.repositoryPath,
 			caseSensitiveMatch: false,
 		})
@@ -59,11 +82,42 @@ export class Category {
 	async getFile(pathInfo: Path) {
 		const indexes = await this.getIndexes()
 		const entry = indexes.get(pathInfo.indexHash)
-		if (entry) {
-			console.log(
-				`found offset for ${pathInfo.path} (${pathInfo.indexHash}):`,
-				entry,
-			)
+		if (entry == null) {
+			// TODO: ?
+			return
 		}
+
+		console.log(
+			`found offset for ${pathInfo.path} (${pathInfo.indexHash}):`,
+			entry,
+		)
+
+		// TODO: do all of this stuff properly
+		const fd = await asyncOpen(
+			path.join(
+				this.repositoryPath,
+				`${this.idPrefix}0000.win32.dat${entry.dataFileId}`,
+			),
+			'r',
+		)
+
+		const fileInfoSize = sqPackFileInfo.sizeOf()
+		const {buffer} = await asyncRead(
+			fd,
+			Buffer.alloc(fileInfoSize),
+			0,
+			fileInfoSize,
+			entry.offset,
+		)
+		const fileInfo = sqPackFileInfo.parse(buffer)
+		console.log('file info:', fileInfo)
+
+		assert(
+			fileInfo.type === FileType.STANDARD,
+			'TODO: Better handling for file types',
+		)
+
+		// TODO: Cache FDs?
+		await asyncClose(fd)
 	}
 }
