@@ -6,11 +6,13 @@ import util from 'util'
 import {parseSqPackIndex, IndexHashTableEntry} from './parser/sqPackIndex'
 import {Parser} from 'binary-parser'
 import {assert} from './utilities'
+import zlib from 'zlib'
 
 const asyncReadFile = util.promisify(fs.readFile)
 const asyncOpen = util.promisify(fs.open)
 const asyncClose = util.promisify(fs.close)
 const asyncRead = util.promisify(fs.read)
+const asyncInflateRaw = util.promisify(zlib.inflateRaw)
 
 const sqPackFileInfo = new Parser()
 	.endianess('little')
@@ -178,6 +180,9 @@ export class Category {
 		)
 
 		console.log('block data:', blockData)
+
+		const foo = (await asyncInflateRaw(blockData)) as Buffer
+		console.log(foo.toString())
 
 		// TODO: Cache FDs?
 		await asyncClose(fd)
