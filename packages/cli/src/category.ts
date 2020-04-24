@@ -62,10 +62,19 @@ export class Category {
 			caseSensitiveMatch: false,
 		})
 
-		// TODO: Check > 0 index
 		assert(indexFiles.length === 1, 'TODO: Handle multiple chunks')
+		const indexFile = indexFiles[0]
 
-		const indexPath = path.join(this.repositoryPath, indexFiles[0])
+		const platform = indexFile.substring(
+			indexFile.indexOf('.') + 1,
+			indexFile.lastIndexOf('.'),
+		)
+		assert(
+			platform === 'win32',
+			`TODO: Handle other platforms. expected 'win32' got '${platform}'`,
+		)
+
+		const indexPath = path.join(this.repositoryPath, indexFile)
 		const indexBuffer = await async.fs.readFile(indexPath)
 
 		const parser =
@@ -114,7 +123,7 @@ export class Category {
 			entry,
 		)
 
-		// TODO: do all of this stuff properly
+		// TODO: handle multiple platforms
 		const fd = await async.fs.open(
 			path.join(
 				this.repositoryPath,
