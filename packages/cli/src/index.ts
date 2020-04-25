@@ -1,9 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
-import {Kobold} from './kobold'
 import {assert} from './utilities'
-import {File} from '@kobold/core'
+import {Kobold, File} from '@kobold/core'
 
 const asyncReadDir = util.promisify(fs.readdir)
 

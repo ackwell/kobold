@@ -7,6 +7,12 @@
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {},
-	"dependencies": {},
-	"devDependencies": {}
+	"dependencies": {
+		"@babel/runtime-corejs3": "^7.9.2",
+		"binary-parser": "^1.6.1",
+		"fast-glob": "^3.2.2"
+	},
+	"devDependencies": {
+		"@types/binary-parser": "^1.5.0"
+	}
 }

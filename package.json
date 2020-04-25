@@ -12,7 +12,7 @@
 		"start": "yarn build && concurrently --kill-others --names compile,declare \"yarn compile:watch\" \"yarn declare:watch\"",
 		"build": "concurrently --kill-others-on-fail --names compile,declare \"yarn compile\" \"yarn declare\"",
 
-		"clean": "rimraf \"packages/*/{dist,gen}\"",
+		"clean": "rimraf \"packages/*/dist\"",
 
 		"compile": "wsrun babel src --out-dir dist --extensions .ts --root-mode upward",
 		"compile:watch": "yarn compile --watch --skip-initial-build --verbose",
