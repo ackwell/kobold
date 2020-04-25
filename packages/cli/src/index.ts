@@ -7,7 +7,7 @@ import {ExcelList} from './excel'
 
 const asyncReadDir = util.promisify(fs.readdir)
 
-// These should be configurable on cli and such
+// TODO: These should be configurable on cli and such
 const sqpackPath =
 	'C:\\Program Files (x86)\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack'
 
@@ -29,6 +29,18 @@ const categoryMap = new Map([
 	['debug', 0x13],
 ])
 
+// TODO: Can we assume this is xiv specific? How should they be configurable, if at all?
+enum Language {
+	NONE = '',
+	JAPANESE = 'ja',
+	ENGLISH = 'en',
+	GERMAN = 'de',
+	FRENCH = 'fr',
+	CHINESE_SIMPLIFIED = 'chs',
+	CHINESE_TRADITIONAL = 'cht',
+	KOREAN = 'ko',
+}
+
 async function main() {
 	const kobold = new Kobold()
 	kobold.setCategories(categoryMap)
@@ -42,9 +54,17 @@ async function main() {
 		})
 	}
 
+	// method arg lmao
+	const sheetName = 'Status'
+
 	const rootExl = await kobold.getFile('exd/root.exl', ExcelList)
 	assert(rootExl != null)
-	console.log(rootExl['sheets'].keys())
+
+	// Make sure the sheet (technically) exists
+	assert(
+		rootExl.sheets.has(sheetName),
+		`Sheet ${sheetName} is not listed in the root excel list.`,
+	)
 }
 main().catch(e => {
 	console.error(e.stack)

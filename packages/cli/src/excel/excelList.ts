@@ -4,7 +4,7 @@ import {assert} from '../utilities'
 export class ExcelList extends File {
 	// Mapping of sheet names to their (game) internal IDs
 	// An ID of -1 means the header is not loaded on init in-game - irrelevant in our case for now.
-	private sheets = new Map<string, number>()
+	sheets = new Map<string, number>()
 
 	load(contents: Buffer) {
 		// EXL are actually plaintext
