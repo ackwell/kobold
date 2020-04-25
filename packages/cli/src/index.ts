@@ -3,7 +3,7 @@ import path from 'path'
 import util from 'util'
 import {assert} from './utilities'
 import {Kobold} from '@kobold/core'
-import {ExcelList} from './excel'
+import {ExcelList, ExcelHeader} from './excel'
 
 const asyncReadDir = util.promisify(fs.readdir)
 
@@ -29,18 +29,6 @@ const categoryMap = new Map([
 	['debug', 0x13],
 ])
 
-// TODO: Can we assume this is xiv specific? How should they be configurable, if at all?
-enum Language {
-	NONE = '',
-	JAPANESE = 'ja',
-	ENGLISH = 'en',
-	GERMAN = 'de',
-	FRENCH = 'fr',
-	CHINESE_SIMPLIFIED = 'chs',
-	CHINESE_TRADITIONAL = 'cht',
-	KOREAN = 'ko',
-}
-
 async function main() {
 	const kobold = new Kobold()
 	kobold.setCategories(categoryMap)
@@ -65,6 +53,12 @@ async function main() {
 		rootExl.sheets.has(sheetName),
 		`Sheet ${sheetName} is not listed in the root excel list.`,
 	)
+
+	// TODO: Sheet cache
+
+	const excelHeader = await kobold.getFile(`exd/${sheetName}.exh`, ExcelHeader)
+	assert(excelHeader != null)
+	console.log(excelHeader)
 }
 main().catch(e => {
 	console.error(e.stack)

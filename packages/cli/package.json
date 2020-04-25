@@ -12,7 +12,10 @@
 	},
 	"dependencies": {
 		"@babel/runtime-corejs3": "^7.9.2",
-		"@kobold/core": "^0.0.1"
+		"@kobold/core": "^0.0.1",
+		"binary-parser": "^1.6.2"
 	},
-	"devDependencies": {}
+	"devDependencies": {
+		"@types/binary-parser": "^1.5.0"
+	}
 }

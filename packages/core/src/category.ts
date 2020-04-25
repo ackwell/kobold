@@ -118,11 +118,6 @@ export class Category {
 			return
 		}
 
-		console.log(
-			`found offset for ${pathInfo.path} (${pathInfo.indexHash}):`,
-			entry,
-		)
-
 		// TODO: handle multiple platforms
 		const fd = await async.fs.open(
 			path.join(
@@ -139,7 +134,6 @@ export class Category {
 			entry.offset,
 		)
 		const fileInfo = fileInfoParser.parse(fileInfoBuffer)
-		console.log('file info:', fileInfo)
 
 		assert(
 			fileInfo.type === FileType.STANDARD,
@@ -163,8 +157,6 @@ export class Category {
 				),
 			)
 		}
-
-		console.log('block info:', blockInfos)
 
 		const blockPromises = blockInfos.map(blockInfo =>
 			this.readBlock(blockInfo, fd, entry.offset + fileInfo.size),
@@ -192,7 +184,6 @@ export class Category {
 		)
 
 		const blockHeader = blockHeaderParser.parse(blockBuffer)
-		console.log('block header:', blockHeader)
 
 		// Adam is using 32000 as some marker for uncompressed blocks - asserting here so if it is, i can inspect what's going on for curiosity's sake
 		assert(blockHeader.compressedSize !== 32000)
@@ -202,8 +193,6 @@ export class Category {
 			blockHeader.size,
 			blockHeader.size + blockHeader.compressedSize,
 		)
-
-		console.log('block data:', blockData)
 
 		return async.zlib.inflateRaw(blockData) as Promise<Buffer>
 	}
