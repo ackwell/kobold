@@ -1,11 +1,7 @@
 import {Repository} from './repository'
 import {assert} from './utilities'
 import {Path} from './path'
-
-// TODO: Where should this live?
-export abstract class File {
-	abstract load(contents: Buffer): void
-}
+import {File} from '@kobold/core'
 
 export class Kobold {
 	private categoryIdMap = new Map<string, number>()
