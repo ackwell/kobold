@@ -2,6 +2,11 @@ import {Repository} from './repository'
 import {assert} from './utilities'
 import {Path} from './path'
 
+// TODO: Where should this live?
+export abstract class File {
+	abstract load(contents: Buffer): void
+}
+
 export class Kobold {
 	private categoryIdMap = new Map<string, number>()
 
@@ -20,7 +25,22 @@ export class Kobold {
 		}
 	}
 
-	getFile(stringOrPath: string | Path) {
+	async getFile<T extends File>(
+		stringOrPath: string | Path,
+		FileClass: new () => T,
+	) {
+		const fileBuffer = await this.getFileRaw(stringOrPath)
+		if (fileBuffer == null) {
+			return
+		}
+
+		const file = new FileClass()
+		await file.load(fileBuffer)
+
+		return file
+	}
+
+	getFileRaw(stringOrPath: string | Path) {
 		const path =
 			typeof stringOrPath === 'string'
 				? this.parsePath(stringOrPath)
