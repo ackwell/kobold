@@ -24,32 +24,33 @@ export class Sheet {
 	}
 
 	private kobold: Kobold
+	private header?: ExcelHeader
 
 	constructor(opts: {kobold: Kobold}) {
 		this.kobold = opts.kobold
 	}
 
-	async tempTest() {
-		// TODO: Sheet cache
-		const header = await this.kobold.getFile(
-			`exd/${this.sheet}.exh`,
-			ExcelHeader,
-		)
-		assert(header != null)
-		console.log(header)
+	async getRow(index: number) {
+		const header = await this.getHeader()
 
 		// TODO: Sort out subrows
 		assert(header.variant === Variant.DEFAULT)
 
+		// Work out what page the requested row is on
+		const pageNumber = header.pages.findIndex(
+			page => page.startId < index && page.startId + page.rowCount > index,
+		)
+
+		// TODO: Page lazy + cache
 		// TODO: Don't hardcode this
 		// exd/{sheetName}_{page}[_{languageString}].exd
 		const page = await this.kobold.getFile(
-			`exd/${this.sheet}_0_en.exd`,
+			`exd/${this.sheet}_${pageNumber}_en.exd`,
 			ExcelPage,
 		)
 		assert(page != null)
 
-		const testRow = 9
+		const testRow = index
 		const testColumn = 20
 
 		const testRowOffset = page.rowOffsets.get(testRow)
@@ -63,6 +64,16 @@ export class Sheet {
 		const testOffset = testRowOffset + testColumnOffset + rowHeaderSize
 		const test = page.data.readInt16BE(testOffset)
 		console.log(test)
+	}
+
+	private async getHeader() {
+		if (this.header == null) {
+			const path = `exd/${this.sheet}.exh`
+			this.header = await this.kobold.getFile(path, ExcelHeader)
+			assert(this.header != null, `${path} missing`)
+		}
+
+		return this.header
 	}
 }
 

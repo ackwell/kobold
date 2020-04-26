@@ -115,6 +115,7 @@ export class Category {
 		const entry = await this.getFileEntry(pathInfo)
 		if (entry == null) {
 			// TODO: ?
+			// Tempted to assert here and be done with it, simplifies consumers a bit
 			return
 		}
 

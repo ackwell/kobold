@@ -23,7 +23,6 @@ export class Excel {
 		)
 
 		const sheet = new SheetClass({kobold: this.kobold})
-		sheet.tempTest()
 
 		return sheet
 	}
