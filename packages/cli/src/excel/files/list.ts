@@ -4,11 +4,15 @@ import {assert} from '../../utilities'
 export class ExcelList extends File {
 	// Mapping of sheet names to their (game) internal IDs
 	// An ID of -1 means the header is not loaded on init in-game - irrelevant in our case for now.
-	sheets = new Map<string, number>()
+	sheets: Map<string, number>
 
-	load(contents: Buffer) {
+	constructor({data}: {data: Buffer}) {
+		super()
+
 		// EXL are actually plaintext
-		const contentString = contents.toString()
+		const contentString = data.toString()
+
+		this.sheets = new Map<string, number>()
 
 		let hasMagic = false
 		for (const line of contentString.split('\r\n')) {

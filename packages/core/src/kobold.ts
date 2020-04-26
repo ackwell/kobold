@@ -23,15 +23,14 @@ export class Kobold {
 
 	async getFile<T extends File>(
 		stringOrPath: string | Path,
-		FileClass: new () => T,
+		FileClass: new ({data}: {data: Buffer}) => T,
 	) {
 		const fileBuffer = await this.getFileRaw(stringOrPath)
 		if (fileBuffer == null) {
 			return
 		}
 
-		const file = new FileClass()
-		await file.load(fileBuffer)
+		const file = new FileClass({data: fileBuffer})
 
 		return file
 	}

@@ -100,20 +100,22 @@ export const languageStringMap = new Map([
 ])
 
 export class ExcelHeader extends File {
-	version = 0
-	dataOffset = 0
-	variant = Variant.UNKNOWN
-	rowCount = 0
-	columns: ColumnDefinition[] = []
-	pages: Pagination[] = []
-	languages: Language[] = []
+	version: number
+	dataOffset: number
+	variant: Variant
+	rowCount: number
+	columns: ColumnDefinition[]
+	pages: Pagination[]
+	languages: Language[]
 
-	load(contents: Buffer) {
+	constructor({data}: {data: Buffer}) {
+		super()
+
 		// Sanity check magic
-		const magic = contents.subarray(0, 4).toString()
+		const magic = data.subarray(0, 4).toString()
 		assert(magic === 'EXHF', 'No EXHF magic found.')
 
-		const parsed = excelHeaderParser.parse(contents)
+		const parsed = excelHeaderParser.parse(data)
 
 		this.version = parsed.header.version
 		this.dataOffset = parsed.header.dataOffset
