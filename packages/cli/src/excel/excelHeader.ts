@@ -17,7 +17,7 @@ const headerParser = new Parser()
 	.uint32('rowCount')
 	.seek(8) // uint32 unknown4[2]
 
-enum Variant {
+export enum Variant {
 	UNKNOWN = 0,
 	DEFAULT = 1,
 	SUBROWS = 2,
@@ -29,11 +29,11 @@ const columnDefinitionParser = new Parser()
 	.uint16('offset')
 // TODO: When i write my own parser, shit like casting enums is gonna needta be first class
 // prettier-ignore
-type ColumnDefinition =
+export type ColumnDefinition =
 	& Omit<ReturnType<typeof columnDefinitionParser.parse>, 'dataType'>
 	& {dataType: ColumnDataType}
 
-enum ColumnDataType {
+export enum ColumnDataType {
 	STRING = 0x0,
 	BOOLEAN = 0x1,
 	INT_8 = 0x2,
@@ -63,7 +63,7 @@ const paginationParser = new Parser()
 	.endianess('big')
 	.uint32('startId')
 	.uint32('rowCount')
-type Pagination = ReturnType<typeof paginationParser.parse>
+export type Pagination = ReturnType<typeof paginationParser.parse>
 
 const excelHeaderParser = new Parser()
 	.nest('header', {type: headerParser})
@@ -76,7 +76,7 @@ const excelHeaderParser = new Parser()
 	.array('languages', {type: 'uint16le', length: 'header.languageCount'})
 
 // TODO: Can we assume this is xiv specific? How should they be configurable, if at all?
-enum Language {
+export enum Language {
 	NONE = 0,
 	JAPANESE = 1,
 	ENGLISH = 2,
@@ -87,7 +87,7 @@ enum Language {
 	KOREAN = 7,
 }
 
-const languageStringMap = new Map([
+export const languageStringMap = new Map([
 	[Language.JAPANESE, 'ja'],
 	[Language.ENGLISH, 'en'],
 	[Language.GERMAN, 'de'],

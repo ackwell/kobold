@@ -3,7 +3,7 @@ import path from 'path'
 import util from 'util'
 import {assert} from './utilities'
 import {Kobold} from '@kobold/core'
-import {ExcelList, ExcelHeader} from './excel'
+import {ExcelList, ExcelHeader, Variant, ExcelData} from './excel'
 
 const asyncReadDir = util.promisify(fs.readdir)
 
@@ -55,10 +55,20 @@ async function main() {
 	)
 
 	// TODO: Sheet cache
-
 	const excelHeader = await kobold.getFile(`exd/${sheetName}.exh`, ExcelHeader)
 	assert(excelHeader != null)
 	console.log(excelHeader)
+
+	// TODO: Sort out subrows
+	assert(excelHeader.variant === Variant.DEFAULT)
+
+	// TODO: Don't hardcode this
+	// exd/{sheetName}_{page}[_{language}].exd
+	const excelDataPage = await kobold.getFile(
+		`exd/${sheetName}_0_en.exd`,
+		ExcelData,
+	)
+	console.log(excelDataPage)
 }
 main().catch(e => {
 	console.error(e.stack)
