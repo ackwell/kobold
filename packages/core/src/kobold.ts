@@ -1,7 +1,7 @@
+import {File} from './file'
+import {Path} from './path'
 import {Repository} from './repository'
 import {assert} from './utilities'
-import {Path} from './path'
-import {File} from './file'
 
 export class Kobold {
 	private categoryIdMap = new Map<string, number>()

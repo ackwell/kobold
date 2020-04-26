@@ -1,14 +1,7 @@
-import {Path} from './path'
 import glob from 'fast-glob'
-import path from 'path'
 import fs from 'fs'
+import path from 'path'
 import util from 'util'
-import {
-	sqPackIndexParser,
-	sqPackIndex2Parser,
-	HashTablePackedOffset,
-} from './parser/sqPackIndex'
-import {assert} from './utilities'
 import zlib from 'zlib'
 import {
 	fileInfoParser,
@@ -17,6 +10,13 @@ import {
 	blockHeaderParser,
 	BlockInfo,
 } from './parser/sqPackDat'
+import {
+	sqPackIndexParser,
+	sqPackIndex2Parser,
+	HashTablePackedOffset,
+} from './parser/sqPackIndex'
+import {Path} from './path'
+import {assert} from './utilities'
 
 const async = {
 	fs: {

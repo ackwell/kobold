@@ -9,8 +9,20 @@ module.exports = {
 	plugins: [
 		'@typescript-eslint',
 		'prettier',
+		'import',
+	],
+	extends: [
+		'plugin:import/typescript'
 	],
 	rules: {
 		'prettier/prettier': 'error',
+		'import/order': ['error', {
+			groups: [
+				['builtin', 'external', 'internal'],
+				'parent',
+				['sibling', 'index'],
+			],
+			alphabetize: {order: 'asc'}
+		}]
 	}
 }

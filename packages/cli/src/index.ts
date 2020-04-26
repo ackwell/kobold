@@ -1,9 +1,9 @@
+import {Kobold} from '@kobold/core'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
-import {assert} from './utilities'
-import {Kobold} from '@kobold/core'
 import {ExcelList, ExcelHeader, Variant, ExcelData} from './excel'
+import {assert} from './utilities'
 
 const asyncReadDir = util.promisify(fs.readdir)
 
