@@ -26,9 +26,6 @@ export class Kobold {
 		FileClass: new (opts: {data: Buffer}) => T,
 	) {
 		const fileBuffer = await this.getFileRaw(stringOrPath)
-		if (fileBuffer == null) {
-			return
-		}
 
 		const file = new FileClass({data: fileBuffer})
 

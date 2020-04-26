@@ -48,7 +48,6 @@ export class Sheet {
 			`exd/${this.sheet}_${pageNumber}_en.exd`,
 			ExcelPage,
 		)
-		assert(page != null)
 
 		const testRow = index
 		const testColumn = 20
@@ -70,7 +69,6 @@ export class Sheet {
 		if (this.header == null) {
 			const path = `exd/${this.sheet}.exh`
 			this.header = await this.kobold.getFile(path, ExcelHeader)
-			assert(this.header != null, `${path} missing`)
 		}
 
 		return this.header

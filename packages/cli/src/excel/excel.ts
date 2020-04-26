@@ -30,7 +30,6 @@ export class Excel {
 	private async getRootList() {
 		if (this.rootList == null) {
 			this.rootList = await this.kobold.getFile('exd/root.exl', ExcelList)
-			assert(this.rootList != null, 'exd/root.exl missing')
 		}
 
 		return this.rootList

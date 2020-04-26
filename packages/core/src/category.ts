@@ -111,13 +111,8 @@ export class Category {
 	}
 
 	async getFile(pathInfo: Path) {
-		// const indexes = await this.getIndexes()
 		const entry = await this.getFileEntry(pathInfo)
-		if (entry == null) {
-			// TODO: ?
-			// Tempted to assert here and be done with it, simplifies consumers a bit
-			return
-		}
+		assert(entry != null, `${pathInfo.path} not found in indexes`)
 
 		// TODO: handle multiple platforms
 		const fd = await async.fs.open(
