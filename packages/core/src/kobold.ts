@@ -23,7 +23,7 @@ export class Kobold {
 
 	async getFile<T extends File>(
 		stringOrPath: string | Path,
-		FileClass: new ({data}: {data: Buffer}) => T,
+		FileClass: new (opts: {data: Buffer}) => T,
 	) {
 		const fileBuffer = await this.getFileRaw(stringOrPath)
 		if (fileBuffer == null) {

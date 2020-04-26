@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import util from 'util'
 import {Excel} from './excel'
+import {Status} from './excel/sheet'
 
 const asyncReadDir = util.promisify(fs.readdir)
 
@@ -42,7 +43,7 @@ async function main() {
 	}
 
 	const excel = new Excel({kobold})
-	excel.getSheet()
+	excel.getSheet(Status)
 }
 main().catch(e => {
 	console.error(e.stack)
