@@ -65,15 +65,17 @@ const paginationParser = new Parser()
 	.uint32('rowCount')
 export type Pagination = ReturnType<typeof paginationParser.parse>
 
+const languageParser = new Parser().endianess('big').uint8('language').seek(1) // unknown1 - probably padding
+
 const excelHeaderParser = new Parser()
+	.endianess('big')
 	.nest('header', {type: headerParser})
 	.array('columns', {
 		type: columnDefinitionParser,
 		length: 'header.columnCount',
 	})
 	.array('pages', {type: paginationParser, length: 'header.pageCount'})
-	// why is this LE? we shall never know. rip adam's sanity.
-	.array('languages', {type: 'uint16le', length: 'header.languageCount'})
+	.array('languages', {type: languageParser, length: 'header.languageCount'})
 
 // TODO: Can we assume this is xiv specific? How should they be configurable, if at all?
 export enum Language {
@@ -124,7 +126,10 @@ export class ExcelHeader extends File {
 
 		this.pages = parsed.pages
 
-		this.languages = parsed.languages
-		this.languages.forEach(language => assert(language in Language))
+		this.languages = parsed.languages.map(({language}) => {
+			assert(language in Language)
+			// TODO: Should I map this to the language string here as well?
+			return language
+		})
 	}
 }

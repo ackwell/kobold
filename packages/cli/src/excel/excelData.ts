@@ -26,6 +26,7 @@ const excelDataParser = new Parser()
 export class ExcelData extends File {
 	version = 0
 	// TODO: should I expose the indexSize?
+	rowOffsets = new Map<number, number>()
 
 	load(contents: Buffer) {
 		// Sanity check the magic
@@ -33,8 +34,11 @@ export class ExcelData extends File {
 		assert(magic === 'EXDF', 'No EXDF magic found.')
 
 		const parsed = excelDataParser.parse(contents)
-		console.log(parsed)
 
 		this.version = parsed.header.version
+
+		for (const rowOffset of parsed.rowOffsets) {
+			this.rowOffsets.set(rowOffset.rowId, rowOffset.offset)
+		}
 	}
 }

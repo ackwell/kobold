@@ -68,7 +68,8 @@ async function main() {
 		`exd/${sheetName}_0_en.exd`,
 		ExcelData,
 	)
-	console.log(excelDataPage)
+	assert(excelDataPage != null)
+	console.log(excelDataPage.rowOffsets.size)
 }
 main().catch(e => {
 	console.error(e.stack)
