@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import util from 'util'
 import {Excel} from './excel'
-import {Status} from './excel/sheet'
+import {Status} from './excel/row'
 
 const asyncReadDir = util.promisify(fs.readdir)
 

@@ -2,6 +2,7 @@ import {Kobold} from '@kobold/core'
 import {Parser} from 'binary-parser'
 import {assert} from '../utilities'
 import {ExcelHeader, Variant, ExcelPage} from './files'
+import {Row, RowConstructor} from './row'
 
 // TODO: where should this live? is it composed by excel, or is it handled as part of the page file reader itself?
 // Should page pre-parse rows?
@@ -10,24 +11,14 @@ const rowHeaderParser = new Parser()
 	.uint32('dataSize')
 	.uint16('rowCount')
 
-export interface SheetConstructor<T extends Sheet> {
-	new (opts: {kobold: Kobold}): T
-	sheet: string
-}
-
-export class Sheet {
-	static get sheet(): string {
-		throw new Error(`Missing \`static sheet\` declaration on ${this.name}.`)
-	}
-	get sheet() {
-		return (this.constructor as typeof Sheet).sheet
-	}
-
+export class Sheet<T extends Row> {
 	private kobold: Kobold
+	private RowClass: RowConstructor<T>
 	private header?: ExcelHeader
 
-	constructor(opts: {kobold: Kobold}) {
+	constructor(opts: {kobold: Kobold; RowClass: RowConstructor<T>}) {
 		this.kobold = opts.kobold
+		this.RowClass = opts.RowClass
 	}
 
 	async getRow(index: number) {
@@ -45,7 +36,7 @@ export class Sheet {
 		// TODO: Don't hardcode this
 		// exd/{sheetName}_{page}[_{languageString}].exd
 		const page = await this.kobold.getFile(
-			`exd/${this.sheet}_${pageNumber}_en.exd`,
+			`exd/${this.RowClass.sheet}_${pageNumber}_en.exd`,
 			ExcelPage,
 		)
 
@@ -67,15 +58,10 @@ export class Sheet {
 
 	private async getHeader() {
 		if (this.header == null) {
-			const path = `exd/${this.sheet}.exh`
+			const path = `exd/${this.RowClass.sheet}.exh`
 			this.header = await this.kobold.getFile(path, ExcelHeader)
 		}
 
 		return this.header
 	}
-}
-
-// this shouldn't be here but fucking whatever right now tbqh
-export class Status extends Sheet {
-	static sheet = 'Status'
 }
