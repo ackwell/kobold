@@ -1,10 +1,8 @@
 import {Kobold} from '@kobold/core'
-import {Parser} from 'binary-parser'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
-import {ExcelList, ExcelHeader, Variant, ExcelData} from './excel/files'
-import {assert} from './utilities'
+import {Excel} from './excel'
 
 const asyncReadDir = util.promisify(fs.readdir)
 
@@ -30,12 +28,6 @@ const categoryMap = new Map([
 	['debug', 0x13],
 ])
 
-// TODO: where should this live? is it composed by excel, or is it handled as part of the data file reader itself?
-const rowHeaderParser = new Parser()
-	.endianess('big')
-	.uint32('dataSize')
-	.uint16('rowCount')
-
 async function main() {
 	const kobold = new Kobold()
 	kobold.setCategories(categoryMap)
@@ -49,48 +41,8 @@ async function main() {
 		})
 	}
 
-	// method arg lmao
-	const sheetName = 'Status'
-
-	const rootExl = await kobold.getFile('exd/root.exl', ExcelList)
-	assert(rootExl != null)
-
-	// Make sure the sheet (technically) exists
-	assert(
-		rootExl.sheets.has(sheetName),
-		`Sheet ${sheetName} is not listed in the root excel list.`,
-	)
-
-	// TODO: Sheet cache
-	const excelHeader = await kobold.getFile(`exd/${sheetName}.exh`, ExcelHeader)
-	assert(excelHeader != null)
-	console.log(excelHeader)
-
-	// TODO: Sort out subrows
-	assert(excelHeader.variant === Variant.DEFAULT)
-
-	// TODO: Don't hardcode this
-	// exd/{sheetName}_{page}[_{languageString}].exd
-	const excelDataPage = await kobold.getFile(
-		`exd/${sheetName}_0_en.exd`,
-		ExcelData,
-	)
-	assert(excelDataPage != null)
-
-	const testRow = 9
-	const testColumn = 20
-
-	const testRowOffset = excelDataPage.rowOffsets.get(testRow)
-	assert(testRowOffset != null)
-
-	const testColumnOffset = excelHeader.columns[testColumn]?.offset
-	assert(testColumnOffset != null)
-
-	const rowHeaderSize = rowHeaderParser.sizeOf()
-
-	const testOffset = testRowOffset + testColumnOffset + rowHeaderSize
-	const test = excelDataPage.data.readInt16BE(testOffset)
-	console.log(test)
+	const excel = new Excel({kobold})
+	excel.getSheet()
 }
 main().catch(e => {
 	console.error(e.stack)
