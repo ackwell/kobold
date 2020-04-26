@@ -1,7 +1,7 @@
 import {Kobold} from '@kobold/core'
 import {Parser} from 'binary-parser'
 import {assert} from '../utilities'
-import {ExcelList, ExcelHeader, ExcelData, Variant} from './files'
+import {ExcelList, ExcelHeader, ExcelPage, Variant} from './files'
 
 // TODO: where should this live? is it composed by excel, or is it handled as part of the data file reader itself?
 const rowHeaderParser = new Parser()
@@ -30,37 +30,37 @@ export class Excel {
 		)
 
 		// TODO: Sheet cache
-		const excelHeader = await this.kobold.getFile(
+		const header = await this.kobold.getFile(
 			`exd/${sheetName}.exh`,
 			ExcelHeader,
 		)
-		assert(excelHeader != null)
-		console.log(excelHeader)
+		assert(header != null)
+		console.log(header)
 
 		// TODO: Sort out subrows
-		assert(excelHeader.variant === Variant.DEFAULT)
+		assert(header.variant === Variant.DEFAULT)
 
 		// TODO: Don't hardcode this
 		// exd/{sheetName}_{page}[_{languageString}].exd
-		const excelDataPage = await this.kobold.getFile(
+		const page = await this.kobold.getFile(
 			`exd/${sheetName}_0_en.exd`,
-			ExcelData,
+			ExcelPage,
 		)
-		assert(excelDataPage != null)
+		assert(page != null)
 
 		const testRow = 9
 		const testColumn = 20
 
-		const testRowOffset = excelDataPage.rowOffsets.get(testRow)
+		const testRowOffset = page.rowOffsets.get(testRow)
 		assert(testRowOffset != null)
 
-		const testColumnOffset = excelHeader.columns[testColumn]?.offset
+		const testColumnOffset = header.columns[testColumn]?.offset
 		assert(testColumnOffset != null)
 
 		const rowHeaderSize = rowHeaderParser.sizeOf()
 
 		const testOffset = testRowOffset + testColumnOffset + rowHeaderSize
-		const test = excelDataPage.data.readInt16BE(testOffset)
+		const test = page.data.readInt16BE(testOffset)
 		console.log(test)
 	}
 

@@ -15,7 +15,7 @@ const rowOffsetParser = new Parser()
 	.uint32('rowId')
 	.uint32('offset')
 
-const excelDataParser = new Parser()
+const excelPageParser = new Parser()
 	.endianess('big')
 	.nest('header', {type: headerParser})
 	.array('rowOffsets', {
@@ -23,7 +23,7 @@ const excelDataParser = new Parser()
 		lengthInBytes: 'header.indexSize',
 	})
 
-export class ExcelData extends File {
+export class ExcelPage extends File {
 	version: number
 	// TODO: should I expose the indexSize?
 	rowOffsets: Map<number, number>
@@ -38,7 +38,7 @@ export class ExcelData extends File {
 
 		this.data = data
 
-		const parsed = excelDataParser.parse(data)
+		const parsed = excelPageParser.parse(data)
 
 		this.version = parsed.header.version
 
