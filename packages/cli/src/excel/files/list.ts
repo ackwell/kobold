@@ -1,5 +1,5 @@
 import {File} from '@kobold/core'
-import {assert} from '../utilities'
+import {assert} from '../../utilities'
 
 export class ExcelList extends File {
 	// Mapping of sheet names to their (game) internal IDs

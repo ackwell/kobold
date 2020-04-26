@@ -1,6 +1,6 @@
 import {File} from '@kobold/core'
 import {Parser} from 'binary-parser'
-import {assert} from '../utilities'
+import {assert} from '../../utilities'
 
 const headerParser = new Parser()
 	.endianess('big')

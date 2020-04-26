@@ -59,8 +59,8 @@ const hashTablePackedOffsetParser = new Parser()
 		// oh and the offset is stored as a count of bytes so gotta multiply that trash
 		formatter: data => {
 			const buf = new Buffer(4)
-			buf.writeUInt32BE((((data as unknown) as number) << 4) >>> 0)
-			return buf.readInt32LE() * 8
+			buf.writeUInt32BE((((data as unknown) as number) << 4) >>> 0, 0)
+			return buf.readInt32LE(0) * 8
 		},
 	})
 export type HashTablePackedOffset = Parsed<typeof hashTablePackedOffsetParser>

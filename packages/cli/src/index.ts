@@ -3,7 +3,7 @@ import {Parser} from 'binary-parser'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
-import {ExcelList, ExcelHeader, Variant, ExcelData} from './excel'
+import {ExcelList, ExcelHeader, Variant, ExcelData} from './excel/files'
 import {assert} from './utilities'
 
 const asyncReadDir = util.promisify(fs.readdir)
@@ -86,7 +86,6 @@ async function main() {
 	const testColumnOffset = excelHeader.columns[testColumn]?.offset
 	assert(testColumnOffset != null)
 
-	// @ts-ignore
 	const rowHeaderSize = rowHeaderParser.sizeOf()
 
 	const testOffset = testRowOffset + testColumnOffset + rowHeaderSize
