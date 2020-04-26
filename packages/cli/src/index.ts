@@ -1,4 +1,5 @@
 import {Kobold} from '@kobold/core'
+import {Parser} from 'binary-parser'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
@@ -28,6 +29,12 @@ const categoryMap = new Map([
 	['sqpack_test', 0x12],
 	['debug', 0x13],
 ])
+
+// TODO: where should this live? is it composed by excel, or is it handled as part of the data file reader itself?
+const rowHeaderParser = new Parser()
+	.endianess('big')
+	.uint32('dataSize')
+	.uint16('rowCount')
 
 async function main() {
 	const kobold = new Kobold()
@@ -63,13 +70,28 @@ async function main() {
 	assert(excelHeader.variant === Variant.DEFAULT)
 
 	// TODO: Don't hardcode this
-	// exd/{sheetName}_{page}[_{language}].exd
+	// exd/{sheetName}_{page}[_{languageString}].exd
 	const excelDataPage = await kobold.getFile(
 		`exd/${sheetName}_0_en.exd`,
 		ExcelData,
 	)
 	assert(excelDataPage != null)
-	console.log(excelDataPage.rowOffsets.size)
+
+	const testRow = 9
+	const testColumn = 20
+
+	const testRowOffset = excelDataPage.rowOffsets.get(testRow)
+	assert(testRowOffset != null)
+
+	const testColumnOffset = excelHeader.columns[testColumn]?.offset
+	assert(testColumnOffset != null)
+
+	// @ts-ignore
+	const rowHeaderSize = rowHeaderParser.sizeOf()
+
+	const testOffset = testRowOffset + testColumnOffset + rowHeaderSize
+	const test = excelDataPage.data.readInt16BE(testOffset)
+	console.log(test)
 }
 main().catch(e => {
 	console.error(e.stack)

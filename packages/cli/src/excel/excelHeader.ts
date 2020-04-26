@@ -42,11 +42,11 @@ export enum ColumnDataType {
 	UINT_16 = 0x5,
 	INT_32 = 0x6,
 	UINT_32 = 0x7,
-	UNKNOWN_1 = 0x8,
+	// UNKNOWN_1 = 0x8,
 	FLOAT_32 = 0x9,
 	INT_64 = 0xa,
 	UINT_64 = 0xb,
-	UNKNOWN_2 = 0xc,
+	// UNKNOWN_2 = 0xc,
 
 	// Read as <0>&0b1, <1>&0b10, <2>&0b100, &c
 	PACKED_BOOL_0 = 0x19,

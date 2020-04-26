@@ -23,15 +23,22 @@ const excelDataParser = new Parser()
 		lengthInBytes: 'header.indexSize',
 	})
 
+// I swear to god if they try to use this before load imma throw a hissy
+// TODO: maybe i should just bite the damn bullet and use a constructor
+const emptyBuffer = Buffer.alloc(0)
+
 export class ExcelData extends File {
 	version = 0
 	// TODO: should I expose the indexSize?
 	rowOffsets = new Map<number, number>()
+	data = emptyBuffer
 
 	load(contents: Buffer) {
 		// Sanity check the magic
 		const magic = contents.subarray(0, 4).toString()
 		assert(magic === 'EXDF', 'No EXDF magic found.')
+
+		this.data = contents
 
 		const parsed = excelDataParser.parse(contents)
 
