@@ -25,8 +25,13 @@ enum Variant {
 
 const columnDefinitionParser = new Parser()
 	.endianess('big')
-	.uint16('columnDataType')
+	.uint16('dataType')
 	.uint16('offset')
+// TODO: When i write my own parser, shit like casting enums is gonna needta be first class
+// prettier-ignore
+type ColumnDefinition =
+	& Omit<ReturnType<typeof columnDefinitionParser.parse>, 'dataType'>
+	& {dataType: ColumnDataType}
 
 enum ColumnDataType {
 	STRING = 0x0,
@@ -45,19 +50,20 @@ enum ColumnDataType {
 
 	// Read as <0>&0b1, <1>&0b10, <2>&0b100, &c
 	PACKED_BOOL_0 = 0x19,
-	PACKED_BOOL_1 = 0x19,
-	PACKED_BOOL_2 = 0x19,
-	PACKED_BOOL_3 = 0x19,
-	PACKED_BOOL_4 = 0x19,
-	PACKED_BOOL_5 = 0x19,
-	PACKED_BOOL_6 = 0x19,
-	PACKED_BOOL_7 = 0x19,
+	PACKED_BOOL_1 = 0x1a,
+	PACKED_BOOL_2 = 0x1b,
+	PACKED_BOOL_3 = 0x1c,
+	PACKED_BOOL_4 = 0x1d,
+	PACKED_BOOL_5 = 0x1e,
+	PACKED_BOOL_6 = 0x1f,
+	PACKED_BOOL_7 = 0x20,
 }
 
 const paginationParser = new Parser()
 	.endianess('big')
 	.uint32('startId')
 	.uint32('rowCount')
+type Pagination = ReturnType<typeof paginationParser.parse>
 
 const excelHeaderParser = new Parser()
 	.nest('header', {type: headerParser})
@@ -71,23 +77,54 @@ const excelHeaderParser = new Parser()
 
 // TODO: Can we assume this is xiv specific? How should they be configurable, if at all?
 enum Language {
-	NONE = '',
-	JAPANESE = 'ja',
-	ENGLISH = 'en',
-	GERMAN = 'de',
-	FRENCH = 'fr',
-	CHINESE_SIMPLIFIED = 'chs',
-	CHINESE_TRADITIONAL = 'cht',
-	KOREAN = 'ko',
+	NONE = 0,
+	JAPANESE = 1,
+	ENGLISH = 2,
+	GERMAN = 3,
+	FRENCH = 4,
+	CHINESE_SIMPLIFIED = 5,
+	CHINESE_TRADITIONAL = 6,
+	KOREAN = 7,
 }
 
+const languageStringMap = new Map([
+	[Language.JAPANESE, 'ja'],
+	[Language.ENGLISH, 'en'],
+	[Language.GERMAN, 'de'],
+	[Language.FRENCH, 'fr'],
+	[Language.CHINESE_SIMPLIFIED, 'chs'],
+	[Language.CHINESE_TRADITIONAL, 'cht'],
+	[Language.KOREAN, 'ko'],
+])
+
 export class ExcelHeader extends File {
+	version = 0
+	dataOffset = 0
+	variant = Variant.UNKNOWN
+	rowCount = 0
+	columns: ColumnDefinition[] = []
+	pages: Pagination[] = []
+	languages: Language[] = []
+
 	load(contents: Buffer) {
 		// Sanity check magic
 		const magic = contents.subarray(0, 4).toString()
 		assert(magic === 'EXHF', 'No EXHF magic found.')
 
 		const parsed = excelHeaderParser.parse(contents)
-		console.log(parsed)
+
+		this.version = parsed.header.version
+		this.dataOffset = parsed.header.dataOffset
+		this.variant = parsed.header.variant
+		assert(this.variant in Variant)
+		this.rowCount = parsed.header.rowCount
+
+		this.columns = parsed.columns
+		this.columns.forEach(column => assert(column.dataType in ColumnDataType))
+
+		this.pages = parsed.pages
+
+		this.languages = parsed.languages
+		this.languages.forEach(language => assert(language in Language))
 	}
 }
