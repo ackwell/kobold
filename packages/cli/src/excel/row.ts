@@ -2,6 +2,7 @@ import {assert} from '../utilities'
 import {ExcelHeader, ColumnDataType, ColumnDefinition} from './files'
 
 interface RowConstructorOptions {
+	index: number
 	sheetHeader: ExcelHeader
 	data: Buffer
 }
@@ -20,12 +21,15 @@ export class Row {
 		throw new Error(`Missing \`static sheet\` declaration on ${this.name}.`)
 	}
 
+	index: number
+
 	// TODO: Do I want the entire header, or a subset?
 	private sheetHeader: ExcelHeader
 	private data: Buffer
 	private currentColumn = 0
 
 	constructor(opts: RowConstructorOptions) {
+		this.index = opts.index
 		this.sheetHeader = opts.sheetHeader
 		this.data = opts.data
 	}

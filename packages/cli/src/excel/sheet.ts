@@ -54,6 +54,7 @@ export class Sheet<T extends Row> {
 		const rowData = page.data.subarray(rowStart, rowStart + rowLength)
 
 		const rowInstance = new this.RowClass({
+			index,
 			sheetHeader: header,
 			data: rowData,
 		})
