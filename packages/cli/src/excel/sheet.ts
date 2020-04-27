@@ -32,6 +32,10 @@ export class Sheet<T extends Row> {
 		const pageNumber = header.pages.findIndex(
 			page => page.startId < index && page.startId + page.rowCount > index,
 		)
+		assert(
+			pageNumber !== -1,
+			`Requested index ${index} is not defined by any sheet pages`,
+		)
 
 		// TODO: Page lazy + cache
 		// TODO: Don't hardcode this
