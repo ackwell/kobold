@@ -44,7 +44,7 @@ async function main() {
 
 	const excel = new Excel({kobold})
 	const sheet = await excel.getSheet(Status)
-	console.log(await sheet.getRow(9))
+	console.log(await sheet.getRow(103))
 }
 main().catch(e => {
 	console.error(e.stack)

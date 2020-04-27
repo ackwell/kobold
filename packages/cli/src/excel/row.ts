@@ -11,6 +11,10 @@ export interface RowConstructor<T extends Row> {
 	sheet: string
 }
 
+type ColumnSeekOptions =
+	| {column: number; offset?: undefined}
+	| {offset: number; column?: undefined}
+
 export class Row {
 	static get sheet(): string {
 		throw new Error(`Missing \`static sheet\` declaration on ${this.name}.`)
@@ -27,17 +31,37 @@ export class Row {
 	}
 
 	// TODO: Accept options to jump around and shit?
-	private getColumnDefinition() {
+	private getColumnDefinition(opts?: ColumnSeekOptions) {
+		if (opts?.offset != null) {
+			const index = this.sheetHeader.columns.findIndex(
+				column => column.offset === opts.offset,
+			)
+			assert(
+				index !== -1,
+				`Explicit offset ${opts.offset} does not match any column definitions.`,
+			)
+			this.currentColumn = index
+		} else if (opts?.column != null) {
+			this.currentColumn = opts.column
+		}
+
+		assert(
+			this.currentColumn < this.sheetHeader.columns.length,
+			`Defined column ${this.currentColumn} exceeds maximum of ${
+				this.sheetHeader.columns.length - 1
+			}`,
+		)
+
 		return this.sheetHeader.columns[this.currentColumn++]
 	}
 
-	protected unknown() {
+	protected unknown(opts?: ColumnSeekOptions) {
 		// NOOP - retrieve the column definition to advance to the next column position
-		this.getColumnDefinition()
+		this.getColumnDefinition(opts)
 	}
 
-	protected string() {
-		const definition = this.getColumnDefinition()
+	protected string(opts?: ColumnSeekOptions) {
+		const definition = this.getColumnDefinition(opts)
 		assert(
 			definition.dataType === ColumnDataType.STRING,
 			this.getUnsupportedMessage('string', definition),
@@ -51,8 +75,8 @@ export class Row {
 		return this.data.toString('utf8', dataOffset, nullByteOffset)
 	}
 
-	protected boolean() {
-		const definition = this.getColumnDefinition()
+	protected boolean(opts?: ColumnSeekOptions) {
+		const definition = this.getColumnDefinition(opts)
 
 		switch (definition.dataType) {
 			case ColumnDataType.BOOLEAN:
@@ -75,8 +99,8 @@ export class Row {
 		throw new Error(this.getUnsupportedMessage('boolean', definition))
 	}
 
-	protected number() {
-		const definition = this.getColumnDefinition()
+	protected number(opts?: ColumnSeekOptions) {
+		const definition = this.getColumnDefinition(opts)
 
 		switch (definition.dataType) {
 			case ColumnDataType.INT_8:
@@ -99,8 +123,8 @@ export class Row {
 		throw new Error(this.getUnsupportedMessage('number', definition))
 	}
 
-	protected bigint() {
-		const definition = this.getColumnDefinition()
+	protected bigint(opts?: ColumnSeekOptions) {
+		const definition = this.getColumnDefinition(opts)
 
 		switch (definition.dataType) {
 			case ColumnDataType.INT_64:
@@ -132,26 +156,26 @@ export class Status extends Row {
 	description = this.string()
 	icon = this.number()
 	maxStacks = this.number()
-	unknown1 = this.unknown() // UINT_8
-	category = this.number()
+	// unknown UINT_8
+	category = this.number({column: 5})
 	hitEffect = this.number()
 	vfx = this.number()
 	lockMovement = this.boolean()
 	lockActions = this.boolean()
-	unknown2 = this.unknown() // PACKED_BOOL_2
-	lockControl = this.boolean()
+	// unknown PACKED_BOOL_2
+	lockControl = this.boolean({column: 11})
 	transfiguration = this.boolean()
-	unknown3 = this.unknown() // PACKED_BOOL_5
-	canDispel = this.boolean()
+	// unknown PACKED_BOOL_5
+	canDispel = this.boolean({column: 14})
 	inflictedByActor = this.boolean()
 	isPermanent = this.boolean()
 	partyListPriority = this.number()
-	unknown4 = this.unknown() // PACKED_BOOL_1
-	unknown5 = this.unknown() // PACKED_BOOL_2
-	unknown6 = this.unknown() // INT_16
-	unknown7 = this.unknown() // UINT_8
-	unknown8 = this.unknown() // PACKED_BOOL_3
-	log = this.number()
+	// unknown PACKED_BOOL_1
+	// unknown PACKED_BOOL_2
+	// unknown INT_16
+	// unknown UINT_8
+	// unknown PACKED_BOOL_3
+	log = this.number({column: 23})
 	isFcBuff = this.boolean()
 	invisiblity = this.boolean()
 	// unknown UINT_8
