@@ -1,5 +1,12 @@
+import {ExcelHeader, ColumnDataType} from './files'
+
+interface RowConstructorOptions {
+	sheetHeader: ExcelHeader
+	data: Buffer
+}
+
 export interface RowConstructor<T extends Row> {
-	new (): T
+	new (opts: RowConstructorOptions): T
 	sheet: string
 }
 
@@ -7,12 +14,42 @@ export class Row {
 	static get sheet(): string {
 		throw new Error(`Missing \`static sheet\` declaration on ${this.name}.`)
 	}
-	get sheet() {
-		return (this.constructor as typeof Row).sheet
+
+	// TODO: Do I want the entire header, or a subset?
+	private sheetHeader: ExcelHeader
+	private data: Buffer
+	private currentColumn = 0
+
+	constructor(opts: RowConstructorOptions) {
+		this.sheetHeader = opts.sheetHeader
+		this.data = opts.data
 	}
 
-	protected unknown() {}
-	protected number() {}
+	// TODO: Accept options to jump around and shit?
+	private getColumnDefinition() {
+		return this.sheetHeader.columns[this.currentColumn++]
+	}
+
+	protected unknown() {
+		const def = this.getColumnDefinition()
+	}
+
+	protected number() {
+		const definition = this.getColumnDefinition()
+		console.log(definition)
+
+		switch (definition.dataType) {
+			// TODO: do the rest of these
+			case ColumnDataType.UINT_16:
+				return this.data.readUInt16BE(definition.offset)
+			default:
+				throw new Error(
+					`TODO(assert.fail) unsupported column data type ${
+						ColumnDataType[definition.dataType]
+					} for number`,
+				)
+		}
+	}
 }
 
 // this shouldn't be here but fucking whatever right now tbqh

@@ -10,6 +10,7 @@ const rowHeaderParser = new Parser()
 	.endianess('big')
 	.uint32('dataSize')
 	.uint16('rowCount')
+const rowHeaderSize = rowHeaderParser.sizeOf()
 
 export class Sheet<T extends Row> {
 	private kobold: Kobold
@@ -40,20 +41,24 @@ export class Sheet<T extends Row> {
 			ExcelPage,
 		)
 
-		const testRow = index
-		const testColumn = 20
+		const rowOffset = page.rowOffsets.get(index)
+		assert(rowOffset != null)
 
-		const testRowOffset = page.rowOffsets.get(testRow)
-		assert(testRowOffset != null)
+		// TODO: This subarray call is unfortunate - look into getting rid of it
+		const rowHeader = rowHeaderParser.parse(
+			page.data.subarray(rowOffset, rowOffset + rowHeaderSize),
+		)
 
-		const testColumnOffset = header.columns[testColumn]?.offset
-		assert(testColumnOffset != null)
+		const rowStart = rowOffset + rowHeaderSize
+		const rowLength = header.dataOffset + rowHeader.dataSize
+		const rowData = page.data.subarray(rowStart, rowStart + rowLength)
 
-		const rowHeaderSize = rowHeaderParser.sizeOf()
+		const rowInstance = new this.RowClass({
+			sheetHeader: header,
+			data: rowData,
+		})
 
-		const testOffset = testRowOffset + testColumnOffset + rowHeaderSize
-		const test = page.data.readInt16BE(testOffset)
-		console.log(test)
+		return rowInstance
 	}
 
 	private async getHeader() {

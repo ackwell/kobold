@@ -32,6 +32,7 @@ export class Kobold {
 		return file
 	}
 
+	// TODO: Might be worth refactoring Buffer->DataView so we're not quite so tied to node?
 	getFileRaw(stringOrPath: string | Path) {
 		const path =
 			typeof stringOrPath === 'string'
