@@ -13,9 +13,7 @@
 	"dependencies": {
 		"@babel/runtime-corejs3": "^7.9.2",
 		"@kobold/core": "^0.0.1",
-		"binary-parser": "^1.6.2"
+		"@kobold/excel": "^0.0.1"
 	},
-	"devDependencies": {
-		"@types/binary-parser": "^1.5.0"
-	}
+	"devDependencies": {}
 }

@@ -1,8 +1,8 @@
 import {Kobold} from '@kobold/core'
 import {Parser} from 'binary-parser'
-import {assert} from '../utilities'
 import {ExcelHeader, Variant, ExcelPage, Language} from './files'
 import {Row, RowConstructor} from './row'
+import {assert} from './utilities'
 
 // TODO: where should this live? is it composed by excel, or is it handled as part of the page file reader itself?
 // Should page pre-parse rows?

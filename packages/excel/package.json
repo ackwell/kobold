@@ -1,15 +1,15 @@
 {
-	"name": "@kobold/core",
+	"name": "@kobold/excel",
 	"version": "0.0.1",
-	"description": "Kobold core",
+	"description": "Kobold excel data handler",
 	"author": "ackwell",
 	"license": "MIT",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"dependencies": {
 		"@babel/runtime-corejs3": "^7.9.2",
-		"binary-parser": "^1.6.2",
-		"fast-glob": "^3.2.2"
+		"@kobold/core": "^0.0.1",
+		"binary-parser": "^1.6.2"
 	},
 	"devDependencies": {
 		"@types/binary-parser": "^1.5.0"

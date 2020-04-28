@@ -1,8 +1,8 @@
 import {Kobold} from '@kobold/core'
-import {assert} from '../utilities'
 import {ExcelList, Language} from './files'
 import {RowConstructor, Row} from './row'
 import {Sheet} from './sheet'
+import {assert} from './utilities'
 
 // TODO: Where should this live as well? Here? In a more obvious location? Next to the enum?
 const fallbackLanguage: Language = Language.ENGLISH

@@ -1,5 +1,5 @@
-import {assert} from '../utilities'
 import {ExcelHeader, ColumnDataType, ColumnDefinition} from './files'
+import {assert} from './utilities'
 
 interface RowConstructorOptions {
 	index: number
@@ -16,7 +16,7 @@ type ColumnSeekOptions =
 	| {column: number; offset?: undefined}
 	| {offset: number; column?: undefined}
 
-export class Row {
+export abstract class Row {
 	static get sheet(): string {
 		throw new Error(`Missing \`static sheet\` declaration on ${this.name}.`)
 	}
@@ -149,40 +149,4 @@ export class Row {
 			ColumnDataType[column.dataType]
 		} at offset ${column.offset} (column ${columnIndex})`
 	}
-}
-
-// this shouldn't be here but fucking whatever right now tbqh
-export class Status extends Row {
-	static sheet = 'Status'
-
-	// column defs - let's see if this is a good idea
-	name = this.string()
-	description = this.string()
-	icon = this.number()
-	maxStacks = this.number()
-	// unknown UINT_8
-	category = this.number({column: 5})
-	hitEffect = this.number()
-	vfx = this.number()
-	lockMovement = this.boolean()
-	lockActions = this.boolean()
-	// unknown PACKED_BOOL_2
-	lockControl = this.boolean({column: 11})
-	transfiguration = this.boolean()
-	// unknown PACKED_BOOL_5
-	canDispel = this.boolean({column: 14})
-	inflictedByActor = this.boolean()
-	isPermanent = this.boolean()
-	partyListPriority = this.number()
-	// unknown PACKED_BOOL_1
-	// unknown PACKED_BOOL_2
-	// unknown INT_16
-	// unknown UINT_8
-	// unknown PACKED_BOOL_3
-	log = this.number({column: 23})
-	isFcBuff = this.boolean()
-	invisiblity = this.boolean()
-	// unknown UINT_8
-	// unknown UINT_8
-	// unknown PACKED_BOOL_6
 }
