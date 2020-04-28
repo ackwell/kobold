@@ -10,11 +10,7 @@ import {
 	blockHeaderParser,
 	BlockInfo,
 } from './parser/sqPackDat'
-import {
-	sqPackIndexParser,
-	sqPackIndex2Parser,
-	HashTablePackedOffset,
-} from './parser/sqPackIndex'
+import {sqPackIndexParser, sqPackIndex2Parser} from './parser/sqPackIndex'
 import {Path} from './path'
 import {assert} from './utilities'
 
@@ -36,7 +32,12 @@ enum IndexType {
 	INDEX2,
 }
 
-type IndexMap = Map<bigint, HashTablePackedOffset>
+interface HashTableEntry {
+	isSynonym: boolean
+	dataFileId: number
+	offset: number
+}
+type IndexMap = Map<bigint, HashTableEntry>
 
 // TODO: Most of this should be broken out into CategoryChunk handling
 export class Category {
@@ -81,15 +82,23 @@ export class Category {
 			type === IndexType.INDEX ? sqPackIndexParser : sqPackIndex2Parser
 		const parsed = parser.parse(indexBuffer)
 
-		const indexes = new Map<bigint, HashTablePackedOffset>()
+		const indexes = new Map<bigint, HashTableEntry>()
 		for (const entry of parsed.indexes) {
 			const key =
 				typeof entry.hash === 'bigint' ? entry.hash : BigInt(entry.hash)
-			indexes.set(key, entry)
+			indexes.set(key, this.fixHashData(entry.data))
 		}
 
 		return indexes
 	}
+
+	// TODO: Write my own parser so this shit isn't required
+	// Square's doing a smart thing and storing a uint32 in 28 bits, as the last 4 are always 0 and can be used for the bitfield above.
+	private fixHashData = (data: number) => ({
+		isSynonym: (data & 0b1) === 0b1,
+		dataFileId: (data & 0b1110) >>> 1,
+		offset: (data & ~0xf) * 8,
+	})
 
 	private getIndexes(type: IndexType) {
 		let indexPromise = this.indexCache.get(type)
@@ -113,7 +122,7 @@ export class Category {
 	async getFile(pathInfo: Path) {
 		const entry = await this.getFileEntry(pathInfo)
 		assert(entry != null, `${pathInfo.path} not found in indexes`)
-		assert(entry.isSynonym === 0, 'TODO: Handle synonym files')
+		assert(!entry.isSynonym, 'TODO: Handle synonym files' + pathInfo.path)
 
 		// TODO: handle multiple platforms
 		const fd = await async.fs.open(

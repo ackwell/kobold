@@ -51,18 +51,7 @@ export type SqPackIndexHeader = Parsed<typeof sqPackIndexHeaderParser>
 
 const hashTablePackedOffsetParser = new Parser()
 	.endianess('little')
-	.bit1('isSynonym')
-	.bit3('dataFileId')
-	.bit28('offset', {
-		// Square's doing a smart thing and storing a uint32 in 28 bits, as the last 4 are always 0 and can be used for the bitfield above.
-		// binary parser also totally ignores my endianess setting for bit fields which is fucking lovely of it, hence the swap. it's inlined because otherwise it can't find it because lmao exec()
-		// oh and the offset is stored as a count of bytes so gotta multiply that trash
-		formatter: data => {
-			const buf = new Buffer(4)
-			buf.writeUInt32BE((((data as unknown) as number) << 4) >>> 0, 0)
-			return buf.readInt32LE(0) * 8
-		},
-	})
+	.uint32('data')
 export type HashTablePackedOffset = Parsed<typeof hashTablePackedOffsetParser>
 
 const indexHashTableEntryParser = new Parser()
