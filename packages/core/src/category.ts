@@ -113,6 +113,7 @@ export class Category {
 	async getFile(pathInfo: Path) {
 		const entry = await this.getFileEntry(pathInfo)
 		assert(entry != null, `${pathInfo.path} not found in indexes`)
+		assert(entry.isSynonym === 0, 'TODO: Handle synonym files')
 
 		// TODO: handle multiple platforms
 		const fd = await async.fs.open(
