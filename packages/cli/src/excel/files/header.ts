@@ -89,16 +89,6 @@ export enum Language {
 	KOREAN = 7,
 }
 
-export const languageStringMap = new Map([
-	[Language.JAPANESE, 'ja'],
-	[Language.ENGLISH, 'en'],
-	[Language.GERMAN, 'de'],
-	[Language.FRENCH, 'fr'],
-	[Language.CHINESE_SIMPLIFIED, 'chs'],
-	[Language.CHINESE_TRADITIONAL, 'cht'],
-	[Language.KOREAN, 'ko'],
-])
-
 export class ExcelHeader extends File {
 	version: number
 	dataOffset: number

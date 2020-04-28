@@ -1,19 +1,25 @@
 import {Kobold} from '@kobold/core'
 import {assert} from '../utilities'
-import {ExcelList} from './files'
+import {ExcelList, Language} from './files'
 import {RowConstructor, Row} from './row'
 import {Sheet} from './sheet'
 
+// TODO: Where should this live as well? Here? In a more obvious location? Next to the enum?
+const fallbackLanguage: Language = Language.ENGLISH
+
 export class Excel {
 	private kobold: Kobold
+	private defaultLanguage?: Language
 	private rootList?: ExcelList
 
-	constructor(opts: {kobold: Kobold}) {
+	constructor(opts: {kobold: Kobold; language?: Language}) {
 		this.kobold = opts.kobold
+		this.defaultLanguage = opts.language
 	}
 
 	async getSheet<T extends Row>(
 		RowClass: RowConstructor<T>,
+		opts?: {language?: Language},
 	): Promise<Sheet<T>> {
 		// TODO: Sheet cache
 
@@ -25,7 +31,13 @@ export class Excel {
 			`Sheet ${sheetName} is not listed in the root excel list.`,
 		)
 
-		const sheet = new Sheet({kobold: this.kobold, RowClass})
+		const language = opts?.language ?? this.defaultLanguage ?? fallbackLanguage
+
+		const sheet = new Sheet({
+			kobold: this.kobold,
+			RowClass,
+			language,
+		})
 
 		return sheet
 	}
