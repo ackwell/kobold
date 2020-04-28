@@ -9,9 +9,14 @@ export class Kobold {
 	private repositories = new Map<string, Repository>()
 	private defaultRepository?: string
 
-	// TODO: Probably should merge
-	setCategories(categoryIdMap: Map<string, number>) {
-		this.categoryIdMap = categoryIdMap
+	addCategories(categories: Record<string, number>) {
+		Object.entries(categories).forEach(([name, id]) =>
+			this.addCategory(name, id),
+		)
+	}
+
+	addCategory(name: string, id: number) {
+		this.categoryIdMap.set(name, id)
 	}
 
 	addRepository(opts: {name: string; path: string; default?: boolean}) {
@@ -27,9 +32,7 @@ export class Kobold {
 	) {
 		const fileBuffer = await this.getFileRaw(stringOrPath)
 
-		const file = new FileClass({data: fileBuffer})
-
-		return file
+		return new FileClass({data: fileBuffer})
 	}
 
 	// TODO: Might be worth refactoring Buffer->DataView so we're not quite so tied to node?
@@ -42,7 +45,6 @@ export class Kobold {
 		const repository = this.repositories.get(path.repository)
 		assert(repository != null)
 
-		// TODO: Map file buffer to a file type reader?
 		return repository.getFile(path)
 	}
 

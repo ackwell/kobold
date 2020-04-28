@@ -71,7 +71,7 @@ export class Category {
 		)
 		assert(
 			platform === 'win32',
-			`TODO: Handle other platforms. expected 'win32' got '${platform}'`,
+			`TODO: Handle other platforms. Expected 'win32', got '${platform}'.`,
 		)
 
 		const indexPath = path.join(this.repositoryPath, indexFile)

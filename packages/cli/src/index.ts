@@ -1,5 +1,6 @@
 import {Kobold} from '@kobold/core'
 import {Excel, Row} from '@kobold/excel'
+import {Language} from '@kobold/excel/dist/files'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
@@ -10,27 +11,27 @@ const asyncReadDir = util.promisify(fs.readdir)
 const sqpackPath =
 	'C:\\Program Files (x86)\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack'
 
-const categoryMap = new Map([
-	['common', 0x00],
-	['bgcommon', 0x01],
-	['bg', 0x02],
-	['cut', 0x03],
-	['chara', 0x04],
-	['shader', 0x05],
-	['ui', 0x06],
-	['sound', 0x07],
-	['vfx', 0x08],
-	['ui_script', 0x09],
-	['exd', 0x0a],
-	['game_script', 0x0b],
-	['music', 0x0c],
-	['sqpack_test', 0x12],
-	['debug', 0x13],
-])
+const categories = {
+	common: 0x00,
+	bgcommon: 0x01,
+	bg: 0x02,
+	cut: 0x03,
+	chara: 0x04,
+	shader: 0x05,
+	ui: 0x06,
+	sound: 0x07,
+	vfx: 0x08,
+	ui_script: 0x09,
+	exd: 0x0a,
+	game_script: 0x0b,
+	music: 0x0c,
+	sqpack_test: 0x12,
+	debug: 0x13,
+}
 
 async function main() {
 	const kobold = new Kobold()
-	kobold.setCategories(categoryMap)
+	kobold.addCategories(categories)
 
 	const repoDirs = await asyncReadDir(sqpackPath)
 	for (const repoDir of repoDirs) {
@@ -42,7 +43,7 @@ async function main() {
 	}
 
 	const excel = new Excel({kobold})
-	const sheet = await excel.getSheet(Status)
+	const sheet = await excel.getSheet(Status, {language: Language.GERMAN})
 	console.log(await sheet.getRow(103))
 }
 main().catch(e => {
