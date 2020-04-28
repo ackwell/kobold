@@ -8,10 +8,9 @@
 	"types": "dist/index.d.ts",
 	"dependencies": {
 		"@babel/runtime-corejs3": "^7.9.2",
+		"@types/binary-parser": "^1.5.0",
 		"binary-parser": "^1.6.2",
 		"fast-glob": "^3.2.2"
 	},
-	"devDependencies": {
-		"@types/binary-parser": "^1.5.0"
-	}
+	"devDependencies": {}
 }

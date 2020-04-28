@@ -6,12 +6,15 @@
 	"license": "MIT",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"peerDependencies": {
+		"@kobold/core": "^0.0.1"
+	},
 	"dependencies": {
 		"@babel/runtime-corejs3": "^7.9.2",
-		"@kobold/core": "^0.0.1",
+		"@types/binary-parser": "^1.5.0",
 		"binary-parser": "^1.6.2"
 	},
 	"devDependencies": {
-		"@types/binary-parser": "^1.5.0"
+		"@kobold/core": "^0.0.1"
 	}
 }
