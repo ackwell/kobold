@@ -4,6 +4,7 @@
 	"description": "Kobold CLI",
 	"author": "ackwell",
 	"license": "MIT",
+	"private": true,
 	"scripts": {
 		"kobold": "node dist"
 	},
