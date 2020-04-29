@@ -43,8 +43,12 @@ async function main() {
 	}
 
 	const excel = new Excel({kobold})
-	const sheet = await excel.getSheet(Status, {language: Language.GERMAN})
-	console.log(await sheet.getRow(103))
+	// const sheet = await excel.getSheet(Status, {language: Language.GERMAN})
+	// console.log(await sheet.getRow(103))
+
+	const test = await excel.getSheet(AOZArrangement)
+	const row = await test.getRow(4, 1)
+	console.log(row)
 }
 main().catch(e => {
 	console.error(e.stack)
@@ -85,4 +89,11 @@ export class Status extends Row {
 	// unknown UINT_8
 	// unknown UINT_8
 	// unknown PACKED_BOOL_6
+}
+
+export class AOZArrangement extends Row {
+	static sheet = 'AOZArrangement'
+
+	contentBriefingBNPC = this.number()
+	unknown1 = this.number()
 }

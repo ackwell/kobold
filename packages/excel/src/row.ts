@@ -1,8 +1,9 @@
-import {ExcelHeader, ColumnDataType, ColumnDefinition} from './files'
+import {ExcelHeader, ColumnDataType, ColumnDefinition, Variant} from './files'
 import {assert} from './utilities'
 
 interface RowConstructorOptions {
 	index: number
+	subIndex: number
 	sheetHeader: ExcelHeader
 	data: Buffer
 }
@@ -16,12 +17,16 @@ type ColumnSeekOptions =
 	| {column: number; offset?: undefined}
 	| {offset: number; column?: undefined}
 
+// uint16 subrowId
+const SUBROW_HEADER_SIZE = 2
+
 export abstract class Row {
 	static get sheet(): string {
 		throw new Error(`Missing \`static sheet\` declaration on ${this.name}.`)
 	}
 
 	index: number
+	subIndex: number
 
 	// TODO: Do I want the entire header, or a subset?
 	private sheetHeader: ExcelHeader
@@ -30,6 +35,7 @@ export abstract class Row {
 
 	constructor(opts: RowConstructorOptions) {
 		this.index = opts.index
+		this.subIndex = opts.subIndex
 		this.sheetHeader = opts.sheetHeader
 		this.data = opts.data
 	}
@@ -56,7 +62,24 @@ export abstract class Row {
 			}`,
 		)
 
-		return this.sheetHeader.columns[this.currentColumn++]
+		const baseDefinition = this.sheetHeader.columns[this.currentColumn++]
+
+		const offset =
+			this.sheetHeader.variant === Variant.SUBROWS
+				? this.calculateSubrowOffset(baseDefinition.offset)
+				: baseDefinition.offset
+
+		return {
+			...baseDefinition,
+			offset,
+		}
+	}
+
+	private calculateSubrowOffset(baseOffset: number) {
+		const subrowOffset =
+			this.subIndex * (this.sheetHeader.rowSize + SUBROW_HEADER_SIZE)
+
+		return subrowOffset + SUBROW_HEADER_SIZE + baseOffset
 	}
 
 	protected unknown(opts?: ColumnSeekOptions) {
@@ -65,6 +88,12 @@ export abstract class Row {
 	}
 
 	protected string(opts?: ColumnSeekOptions) {
+		// Subrow sheets nessecarily cannot contain strings
+		assert(
+			this.sheetHeader.variant !== Variant.SUBROWS,
+			`Sheets of type SUBROWS do not support string values`,
+		)
+
 		const definition = this.getColumnDefinition(opts)
 		assert(
 			definition.dataType === ColumnDataType.STRING,
@@ -74,7 +103,7 @@ export abstract class Row {
 		// Get the specified offset of the start of the string, and search from there
 		// for the following null byte, marking the end.
 		const stringOffset = this.data.readUInt32BE(definition.offset)
-		const dataOffset = stringOffset + this.sheetHeader.dataOffset
+		const dataOffset = stringOffset + this.sheetHeader.rowSize
 		const nullByteOffset = this.data.indexOf(0, dataOffset)
 		return this.data.toString('utf8', dataOffset, nullByteOffset)
 	}

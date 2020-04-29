@@ -6,7 +6,7 @@ const headerParser = new Parser()
 	.endianess('big')
 	.string('magic', {length: 4})
 	.uint16('version')
-	.uint16('dataOffset')
+	.uint16('rowSize')
 	.uint16('columnCount')
 	.uint16('pageCount')
 	.uint16('languageCount')
@@ -91,7 +91,7 @@ export enum Language {
 
 export class ExcelHeader extends File {
 	version: number
-	dataOffset: number
+	rowSize: number
 	variant: Variant
 	rowCount: number
 	columns: ColumnDefinition[]
@@ -108,7 +108,7 @@ export class ExcelHeader extends File {
 		const parsed = excelHeaderParser.parse(data)
 
 		this.version = parsed.header.version
-		this.dataOffset = parsed.header.dataOffset
+		this.rowSize = parsed.header.rowSize
 		this.variant = parsed.header.variant
 		assert(this.variant in Variant)
 		this.rowCount = parsed.header.rowCount

@@ -39,7 +39,7 @@ export class Sheet<T extends Row> {
 		this.language = opts.language
 	}
 
-	async getRow(index: number) {
+	async getRow(index: number, subIndex: number = 0) {
 		const header = await this.getHeader()
 
 		// Work out what page the requested row is on
@@ -62,11 +62,12 @@ export class Sheet<T extends Row> {
 		)
 
 		const rowStart = rowOffset + rowHeaderSize
-		const rowLength = header.dataOffset + rowHeader.dataSize
+		const rowLength = header.rowSize + rowHeader.dataSize
 		const rowData = page.data.subarray(rowStart, rowStart + rowLength)
 
 		const rowInstance = new this.RowClass({
 			index,
+			subIndex,
 			sheetHeader: header,
 			data: rowData,
 		})
@@ -106,9 +107,6 @@ export class Sheet<T extends Row> {
 				this.RowClass.sheet
 			} (provided: ${languages.map(lang => Language[lang]).join(', ')})`,
 		)
-
-		// TODO: Sort out subrows
-		assert(this.header.variant === Variant.DEFAULT)
 
 		return this.header
 	}
