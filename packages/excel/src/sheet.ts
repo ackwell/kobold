@@ -44,7 +44,7 @@ export class Sheet<T extends Row> {
 
 		// Work out what page the requested row is on
 		const pageDefinition = header.pages.find(
-			page => page.startId < index && page.startId + page.rowCount > index,
+			page => page.startId <= index && page.startId + page.rowCount > index,
 		)
 		assert(
 			pageDefinition != null,
