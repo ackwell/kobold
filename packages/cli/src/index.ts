@@ -47,8 +47,8 @@ async function main() {
 	// console.log(await sheet.getRow(103))
 
 	const test = await excel.getSheet(AOZArrangement)
-	const row = await test.getRow(4, 1)
-	console.log(row)
+	console.log(await test.getRow(4, 0))
+	console.log(await test.getRow(4, 1))
 }
 main().catch(e => {
 	console.error(e.stack)

@@ -27,7 +27,8 @@ export class Sheet<T extends Row> {
 	private kobold: Kobold
 	private RowClass: RowConstructor<T>
 	private language: Language
-	private header?: ExcelHeader
+	private headerCache?: ExcelHeader
+	private pageCache = new Map<string, ExcelPage>()
 
 	constructor(opts: {
 		kobold: Kobold
@@ -75,27 +76,33 @@ export class Sheet<T extends Row> {
 		return rowInstance
 	}
 
-	private getPage(startId: number) {
-		// TODO: Cache
+	private async getPage(startId: number) {
 		const language = this.language
+
 		// exd/{sheetName}_{page}[_{languageString}].exd
 		const path =
 			language === Language.NONE
 				? `exd/${this.RowClass.sheet}_${startId}.exd`
 				: `exd/${this.RowClass.sheet}_${startId}_${languageStringMap[language]}.exd`.toLowerCase()
 
-		return this.kobold.getFile(path, ExcelPage)
+		let page = this.pageCache.get(path)
+		if (page == null) {
+			page = await this.kobold.getFile(path, ExcelPage)
+			this.pageCache.set(path, page)
+		}
+
+		return page
 	}
 
 	// TODO: Probably should rename this given how much logic i'm throwing in
 	private async getHeader() {
-		if (this.header == null) {
+		if (this.headerCache == null) {
 			const path = `exd/${this.RowClass.sheet}.exh`
-			this.header = await this.kobold.getFile(path, ExcelHeader)
+			this.headerCache = await this.kobold.getFile(path, ExcelHeader)
 		}
 
 		// If the sheet _only_ supports NONE, silently fall back
-		const {languages} = this.header
+		const {languages} = this.headerCache
 		if (languages.length === 1 && languages[0] === Language.NONE) {
 			this.language = Language.NONE
 		}
@@ -108,6 +115,6 @@ export class Sheet<T extends Row> {
 			} (provided: ${languages.map(lang => Language[lang]).join(', ')})`,
 		)
 
-		return this.header
+		return this.headerCache
 	}
 }
