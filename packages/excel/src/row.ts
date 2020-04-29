@@ -28,11 +28,12 @@ export abstract class Row {
 	index: number
 	subIndex: number
 
-	// TODO: Do I want the entire header, or a subset?
 	private sheetHeader: ExcelHeader
 	private data: Buffer
 	private currentColumn = 0
 
+	// TODO: Consider moving row parsing logic to an external class so consumers aren't dodging all the private members
+	//       That, or use es private fields?
 	constructor(opts: RowConstructorOptions) {
 		this.index = opts.index
 		this.subIndex = opts.subIndex
@@ -40,7 +41,6 @@ export abstract class Row {
 		this.data = opts.data
 	}
 
-	// TODO: Accept options to jump around and shit?
 	private getColumnDefinition(opts?: ColumnSeekOptions) {
 		if (opts?.offset != null) {
 			const index = this.sheetHeader.columns.findIndex(
