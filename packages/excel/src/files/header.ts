@@ -120,7 +120,6 @@ export class ExcelHeader extends File {
 
 		this.languages = parsed.languages.map(({language}) => {
 			assert(language in Language)
-			// TODO: Should I map this to the language string here as well?
 			return language
 		})
 	}

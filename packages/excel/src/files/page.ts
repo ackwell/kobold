@@ -25,7 +25,6 @@ const excelPageParser = new Parser()
 
 export class ExcelPage extends File {
 	version: number
-	// TODO: should I expose the indexSize?
 	rowOffsets: Map<number, number>
 	data: Buffer
 
