@@ -1,6 +1,6 @@
 import {Kobold} from '@kobold/core'
 import {Parser} from 'binary-parser'
-import {ExcelHeader, Variant, ExcelPage, Language} from './files'
+import {ExcelHeader, ExcelPage, Language} from './files'
 import {Row, RowConstructor} from './row'
 import {assert} from './utilities'
 
@@ -40,7 +40,7 @@ export class Sheet<T extends Row> {
 		this.language = opts.language
 	}
 
-	async getRow(index: number, subIndex: number = 0) {
+	async getRow(index: number, subIndex = 0) {
 		const header = await this.getHeader()
 
 		// Work out what page the requested row is on

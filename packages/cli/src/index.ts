@@ -1,6 +1,5 @@
 import {Kobold} from '@kobold/core'
 import {Excel, Row} from '@kobold/excel'
-import {Language} from '@kobold/excel/dist/files'
 import fs from 'fs'
 import path from 'path'
 import util from 'util'
@@ -11,6 +10,7 @@ const asyncReadDir = util.promisify(fs.readdir)
 const sqpackPath =
 	'C:\\Program Files (x86)\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack'
 
+/* eslint-disable @typescript-eslint/camelcase */
 const categories = {
 	common: 0x00,
 	bgcommon: 0x01,
@@ -28,6 +28,7 @@ const categories = {
 	sqpack_test: 0x12,
 	debug: 0x13,
 }
+/* eslint-enable @typescript-eslint/camelcase */
 
 async function main() {
 	const kobold = new Kobold()

@@ -12,10 +12,15 @@ module.exports = {
 		'import',
 	],
 	extends: [
-		'plugin:import/typescript'
+		'eslint:recommended',
+		'plugin:@typescript-eslint/eslint-recommended',
+		'plugin:@typescript-eslint/recommended',
+		'plugin:import/typescript',
 	],
 	rules: {
-		'prettier/prettier': 'error',
+		'@typescript-eslint/array-type': 'error',
+		'@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+		'@typescript-eslint/explicit-function-return-type': 'off',
 		'import/order': ['error', {
 			groups: [
 				['builtin', 'external', 'internal'],
@@ -23,6 +28,11 @@ module.exports = {
 				['sibling', 'index'],
 			],
 			alphabetize: {order: 'asc'}
-		}]
-	}
+		}],
+		'@typescript-eslint/member-delimiter-style': 'off',
+		'@typescript-eslint/method-signature-style': 'error',
+		'@typescript-eslint/no-explicit-any': 'off',
+		'@typescript-eslint/no-use-before-define': 'off',
+		'prettier/prettier': 'error',
+	},
 }
