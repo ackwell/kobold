@@ -9,8 +9,9 @@ import {
 	blockInfoParser,
 	blockHeaderParser,
 	BlockInfo,
-} from './parser/sqPackDat'
-import {sqPackIndexParser, sqPackIndex2Parser} from './parser/sqPackIndex'
+	sqPackIndexParser,
+	sqPackIndex2Parser,
+} from './parser'
 import {Path} from './path'
 import {assert} from './utilities'
 

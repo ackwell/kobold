@@ -15,12 +15,24 @@ module.exports = {
 		'eslint:recommended',
 		'plugin:@typescript-eslint/eslint-recommended',
 		'plugin:@typescript-eslint/recommended',
+		'plugin:import/recommended',
 		'plugin:import/typescript',
 	],
 	rules: {
 		'@typescript-eslint/array-type': 'error',
 		'@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
 		'@typescript-eslint/explicit-function-return-type': 'off',
+		'@typescript-eslint/member-delimiter-style': 'off',
+		'@typescript-eslint/method-signature-style': 'error',
+		'@typescript-eslint/no-explicit-any': 'off',
+		'@typescript-eslint/no-use-before-define': 'off',
+
+		'prettier/prettier': 'error',
+
+		'import/first': 'error',
+		'import/newline-after-import': 'error',
+		'import/no-default-export': 'error',
+		'import/no-internal-modules': 'error',
 		'import/order': ['error', {
 			groups: [
 				['builtin', 'external', 'internal'],
@@ -29,10 +41,5 @@ module.exports = {
 			],
 			alphabetize: {order: 'asc'}
 		}],
-		'@typescript-eslint/member-delimiter-style': 'off',
-		'@typescript-eslint/method-signature-style': 'error',
-		'@typescript-eslint/no-explicit-any': 'off',
-		'@typescript-eslint/no-use-before-define': 'off',
-		'prettier/prettier': 'error',
 	},
 }
