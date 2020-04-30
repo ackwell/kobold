@@ -5,11 +5,15 @@ async function main() {
 	const kobold = await buildKoboldXIV()
 
 	const excel = new Excel({kobold})
-	const sheet = await excel.getSheet(Status, {language: Language.GERMAN})
-	console.log(await sheet.getRow(103))
+	const statuses = await excel.getSheet(Status, {language: Language.GERMAN})
+	console.log(await statuses.getRow(103))
 
-	const test = await excel.getSheet(AOZArrangement)
-	console.log(await test.getRow(4, 1))
+	const arrangements = await excel.getSheet(AOZArrangement)
+	for await (const arrangement of arrangements.getRows()) {
+		console.log(
+			`${arrangement.index}:${arrangement.subIndex} - ${arrangement.contentBriefingBNPC}, ${arrangement.unknown1}`,
+		)
+	}
 }
 main().catch(e => {
 	console.error(e.stack)
