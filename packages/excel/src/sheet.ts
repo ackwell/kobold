@@ -62,6 +62,13 @@ export class Sheet<T extends Row> {
 			page.data.subarray(rowOffset, rowOffset + rowHeaderSize),
 		)
 
+		assert(
+			subIndex < 0 || subIndex < rowHeader.rowCount,
+			`Requested subrow ${subIndex} of row ${index} outside valid range 0 - ${
+				rowHeader.rowCount - 1
+			}`,
+		)
+
 		const rowStart = rowOffset + rowHeaderSize
 		const rowLength = header.rowSize + rowHeader.dataSize
 		const rowData = page.data.subarray(rowStart, rowStart + rowLength)
