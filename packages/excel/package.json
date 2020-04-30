@@ -6,6 +6,9 @@
 	"license": "MIT",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"engines": {
+		"node": ">=10"
+	},
 	"peerDependencies": {
 		"@kobold/core": "^0.0.1"
 	},

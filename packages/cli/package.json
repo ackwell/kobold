@@ -11,6 +11,9 @@
 	"bin": {
 		"kobold": "dist/index.js"
 	},
+	"engines": {
+		"node": ">=10"
+	},
 	"dependencies": {
 		"@babel/runtime-corejs3": "^7.9.2",
 		"@kobold/core": "^0.0.1",
