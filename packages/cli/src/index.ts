@@ -1,15 +1,14 @@
-import {Excel, Row} from '@kobold/excel'
+import {Excel, Row, Language} from '@kobold/excel'
 import {buildKoboldXIV} from '@kobold/xiv'
 
 async function main() {
 	const kobold = await buildKoboldXIV()
 
 	const excel = new Excel({kobold})
-	// const sheet = await excel.getSheet(Status, {language: Language.GERMAN})
-	// console.log(await sheet.getRow(103))
+	const sheet = await excel.getSheet(Status, {language: Language.GERMAN})
+	console.log(await sheet.getRow(103))
 
 	const test = await excel.getSheet(AOZArrangement)
-	console.log(await test.getRow(4, 0))
 	console.log(await test.getRow(4, 1))
 }
 main().catch(e => {
@@ -18,7 +17,7 @@ main().catch(e => {
 })
 
 // this shouldn't be here but fucking whatever right now tbqh
-export class Status extends Row {
+class Status extends Row {
 	static sheet = 'Status'
 
 	// column defs - let's see if this is a good idea
@@ -53,7 +52,7 @@ export class Status extends Row {
 	// unknown PACKED_BOOL_6
 }
 
-export class AOZArrangement extends Row {
+class AOZArrangement extends Row {
 	static sheet = 'AOZArrangement'
 
 	contentBriefingBNPC = this.number()
