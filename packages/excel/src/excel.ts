@@ -10,7 +10,8 @@ const fallbackLanguage: Language = Language.ENGLISH
 export class Excel {
 	private kobold: Kobold
 	private defaultLanguage?: Language
-	private rootList?: ExcelList
+	private rootListCache?: ExcelList
+	private sheetCache = new WeakMap<RowConstructor<any>, Sheet<any>>()
 
 	constructor(opts: {kobold: Kobold; language?: Language}) {
 		this.kobold = opts.kobold
@@ -21,7 +22,10 @@ export class Excel {
 		RowClass: RowConstructor<T>,
 		opts?: {language?: Language},
 	): Promise<Sheet<T>> {
-		// TODO: Sheet cache
+		let sheet = this.sheetCache.get(RowClass)
+		if (sheet != null) {
+			return sheet
+		}
 
 		// Make sure the sheet (technically) exists
 		const sheetName = RowClass.sheet
@@ -33,20 +37,22 @@ export class Excel {
 
 		const language = opts?.language ?? this.defaultLanguage ?? fallbackLanguage
 
-		const sheet = new Sheet({
+		sheet = new Sheet({
 			kobold: this.kobold,
 			RowClass,
 			language,
 		})
 
+		this.sheetCache.set(RowClass, sheet)
+
 		return sheet
 	}
 
 	private async getRootList() {
-		if (this.rootList == null) {
-			this.rootList = await this.kobold.getFile('exd/root.exl', ExcelList)
+		if (this.rootListCache == null) {
+			this.rootListCache = await this.kobold.getFile('exd/root.exl', ExcelList)
 		}
 
-		return this.rootList
+		return this.rootListCache
 	}
 }
