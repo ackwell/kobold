@@ -1,6 +1,6 @@
 import {Kobold} from '@kobold/core'
 import {Parser} from 'binary-parser'
-import {ExcelHeader, ExcelPage, Language} from './files'
+import {ExcelHeader, ExcelPage, Language, PageDefinition} from './files'
 import {Row, RowConstructor} from './row'
 import {assert} from './utilities'
 
@@ -40,13 +40,29 @@ export class Sheet<T extends Row> {
 		this.language = opts.language
 	}
 
-	// TODO: from; to; iterateSubRows;?
-	async *getRows() {
+	async *getRows(opts?: {from: number; to: number}) {
 		const header = await this.getHeader()
 
-		// TODO: limit by to/from
-		const pageDefinitions = header.pages
+		// Make sure they pass the lower of the two as froms
+		if (opts?.from != null && opts.to != null) {
+			assert(
+				opts.from <= opts.to,
+				`Specified "from" row index must precede "to" index.`,
+			)
+		}
 
+		// Work out what pages the requested from/to rows reside in, falling back to first/last. Prettier _really_ fucks these up
+		// prettier-ignore
+		const from = opts?.from != null
+			? this.getPageForRow(header.pages, opts.from)
+			: 0
+		// prettier-ignore
+		const to = opts?.to != null
+			? this.getPageForRow(header.pages, opts.to)
+			: header.pages.length - 1
+		const pageDefinitions = header.pages.slice(from, to + 1)
+
+		// Preload the pages we'll be looping
 		const pagePreLoad = pageDefinitions.map(({startId}) =>
 			this.getPage(startId),
 		)
@@ -54,6 +70,11 @@ export class Sheet<T extends Row> {
 		// holy nested loops batman
 		for await (const page of pagePreLoad) {
 			for (const index of page.rowOffsets.keys()) {
+				// Skip rows not contained within the requested range, if any
+				if (index < (opts?.from ?? 0) || index > (opts?.to ?? Infinity)) {
+					continue
+				}
+
 				const rowHeader = this.parseRowHeader(page, index)
 
 				// TODO: DEFAULT Variants seem to be stable on rowCount:1 here, but keep an eye on it
@@ -68,17 +89,22 @@ export class Sheet<T extends Row> {
 		const header = await this.getHeader()
 
 		// Work out what page the requested row is on
-		const pageDefinition = header.pages.find(
-			page => page.startId <= index && page.startId + page.rowCount > index,
-		)
-		assert(
-			pageDefinition != null,
-			`Requested index ${index} is not defined by any sheet pages`,
-		)
+		const pageDefinition = header.pages[this.getPageForRow(header.pages, index)]
 
 		const page = await this.getPage(pageDefinition.startId)
 
 		return this.buildRow(header, page, index, subIndex)
+	}
+
+	private getPageForRow(pages: PageDefinition[], index: number) {
+		const pageIndex = pages.findIndex(
+			page => page.startId <= index && page.startId + page.rowCount > index,
+		)
+		assert(
+			pageIndex >= 0,
+			`Requested index ${index} is not defined by any sheet pages`,
+		)
+		return pageIndex
 	}
 
 	// TODO: Probably should rename this given how much logic i'm throwing in

@@ -59,11 +59,11 @@ export enum ColumnDataType {
 	PACKED_BOOL_7 = 0x20,
 }
 
-const paginationParser = new Parser()
+const pageDefinitionParser = new Parser()
 	.endianess('big')
 	.uint32('startId')
 	.uint32('rowCount')
-export type Pagination = ReturnType<typeof paginationParser.parse>
+export type PageDefinition = ReturnType<typeof pageDefinitionParser.parse>
 
 const languageParser = new Parser().endianess('big').uint8('language').seek(1) // unknown1 - probably padding
 
@@ -74,7 +74,7 @@ const excelHeaderParser = new Parser()
 		type: columnDefinitionParser,
 		length: 'header.columnCount',
 	})
-	.array('pages', {type: paginationParser, length: 'header.pageCount'})
+	.array('pages', {type: pageDefinitionParser, length: 'header.pageCount'})
 	.array('languages', {type: languageParser, length: 'header.languageCount'})
 
 // TODO: Can we assume this is xiv specific? How should they be configurable, if at all?
@@ -95,7 +95,7 @@ export class ExcelHeader extends File {
 	variant: Variant
 	rowCount: number
 	columns: ColumnDefinition[]
-	pages: Pagination[]
+	pages: PageDefinition[]
 	languages: Language[]
 
 	constructor({data}: {data: Buffer}) {
