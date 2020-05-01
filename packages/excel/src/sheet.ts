@@ -44,12 +44,15 @@ export class Sheet<T extends Row> {
 	async *getRows() {
 		const header = await this.getHeader()
 
-		const pageDefinitions = header.pages // TODO: limit by to/from
+		// TODO: limit by to/from
+		const pageDefinitions = header.pages
+
+		const pagePreLoad = pageDefinitions.map(({startId}) =>
+			this.getPage(startId),
+		)
 
 		// holy nested loops batman
-		for (const pageDefinition of pageDefinitions) {
-			const page = await this.getPage(pageDefinition.startId)
-
+		for await (const page of pagePreLoad) {
 			for (const index of page.rowOffsets.keys()) {
 				const rowHeader = this.parseRowHeader(page, index)
 
