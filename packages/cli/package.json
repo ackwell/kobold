@@ -2,7 +2,8 @@
 	"name": "@kobold/cli",
 	"version": "0.0.1",
 	"description": "Kobold CLI",
-	"author": "ackwell",
+	"author": "ackwell (https://ackwell.com.au)",
+	"repository": "ackwell/kobold",
 	"license": "MIT",
 	"private": true,
 	"scripts": {
