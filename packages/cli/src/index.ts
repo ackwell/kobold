@@ -34,9 +34,9 @@ class Status extends Row {
 	hitEffect = this.number()
 	vfx = this.number()
 	lockMovement = this.boolean()
-	lockActions = this.boolean()
 	// unknown PACKED_BOOL_2
-	lockControl = this.boolean({column: 11})
+	lockActions = this.boolean({column: 10})
+	lockControl = this.boolean()
 	transfiguration = this.boolean()
 	// unknown PACKED_BOOL_5
 	canDispel = this.boolean({column: 14})
