@@ -21,8 +21,15 @@ type ColumnSeekOptions =
 const SUBROW_HEADER_SIZE = 2
 
 export abstract class Row {
+	private static _sheet?: string
 	static get sheet(): string {
+		if (this._sheet != null) {
+			return this._sheet
+		}
 		throw new Error(`Missing \`static sheet\` declaration on ${this.name}.`)
+	}
+	static set sheet(value) {
+		this._sheet = value
 	}
 
 	index: number
