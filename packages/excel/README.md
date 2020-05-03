@@ -1,5 +1,8 @@
-<p align="center"><img src="../../kobold.png?raw=true" alt="kobold" height="200"></p>
+<p align="center"><img src="https://github.com/ackwell/kobold/raw/master/kobold.png?raw=true" alt="kobold" height="200"></p>
 <h1 align="center">@kobold/excel</h1>
+<p align="center">
+	<a href="https://www.npmjs.com/package/@kobold/excel" title="NPM"><img src="https://img.shields.io/npm/v/@kobold/excel?style=flat-square" alt="NPM"></a>
+</p>
 
 Excel (EXD) sheet reader module for Kobold.
 
