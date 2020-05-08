@@ -18,7 +18,7 @@
 	"dependencies": {
 		"@babel/runtime-corejs3": "^7.9.2",
 		"@kobold/core": "^0.0.1",
-		"@kobold/excel": "^0.0.1",
+		"@kobold/excel": "^0.0.2",
 		"@kobold/xiv": "^0.0.1"
 	},
 	"devDependencies": {}
