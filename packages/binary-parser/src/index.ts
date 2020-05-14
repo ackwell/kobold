@@ -1,4 +1,7 @@
-type Endianness = 'big' | 'little'
+export enum Endianness {
+	BIG,
+	LITTLE,
+}
 
 interface NumberOptions {
 	endianness?: Endianness
@@ -10,6 +13,8 @@ export class Parser {
 			data: new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength),
 		}) as InstanceType<T>
 	}
+
+	protected endianness?: Endianness
 
 	private data: DataView
 	private offset = 0
@@ -24,6 +29,10 @@ export class Parser {
 		return currentOffset
 	}
 
+	private isLittleEndian(override?: Endianness) {
+		return (this.endianness ?? override) === Endianness.LITTLE
+	}
+
 	protected uint8(): number {
 		return this.data.getUint8(this.fieldOffset(1))
 	}
@@ -31,7 +40,7 @@ export class Parser {
 	protected uint16(opts?: NumberOptions): number {
 		return this.data.getUint16(
 			this.fieldOffset(2),
-			opts?.endianness === 'little',
+			this.isLittleEndian(opts?.endianness),
 		)
 	}
 }

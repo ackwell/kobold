@@ -1,4 +1,4 @@
-import {Parser} from '../src'
+import {Parser, Endianness} from '../src'
 
 function buildDataView(size: number) {
 	const buffer = Buffer.alloc(size)
@@ -38,13 +38,20 @@ describe('primitive values', () => {
 
 		class Uint16 extends Parser {
 			one = this.uint16()
-			two = this.uint16({endianness: 'big'})
-			three = this.uint16({endianness: 'little'})
+			two = this.uint16({endianness: Endianness.BIG})
+			three = this.uint16({endianness: Endianness.LITTLE})
 		}
 		const parsed = new Uint16({data: input})
 
 		expect(parsed.one).toBe(2346)
 		expect(parsed.two).toBe(8678)
 		expect(parsed.three).toBe(3568)
+
+		class Uint16LE extends Parser {
+			protected endianness = Endianness.LITTLE
+			one = this.uint16()
+		}
+		const parsed2 = new Uint16LE({data: input})
+		expect(parsed2.one).toBe(10761)
 	})
 })
