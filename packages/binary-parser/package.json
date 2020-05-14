@@ -1,0 +1,21 @@
+{
+	"name": "@kobold/binary-parser",
+	"version": "0.0.1",
+	"description": "Binary structure parser for use in the kobold sqpack reader suite",
+	"keywords": ["binary", "parser", "struct"],
+	"author": "ackwell (https://ackwell.com.au)",
+	"repository": "ackwell/kobold",
+	"license": "MIT",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"publishConfig": {
+		"access": "public"
+	},
+	"engines": {
+		"node": ">=10"
+	},
+	"dependencies": {
+		"@babel/runtime-corejs3": "^7.9.2"
+	},
+	"devDependencies": {}
+}
