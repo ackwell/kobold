@@ -12,7 +12,13 @@ export class Parser {
 		this.data = opts.data
 	}
 
+	private fieldOffset(length: number) {
+		const currentOffset = this.offset
+		this.offset += length
+		return currentOffset
+	}
+
 	protected uint8(): number {
-		return this.data.getUint8(this.offset)
+		return this.data.getUint8(this.fieldOffset(1))
 	}
 }
