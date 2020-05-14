@@ -1,3 +1,9 @@
+type Endianness = 'big' | 'little'
+
+interface NumberOptions {
+	endianness?: Endianness
+}
+
 export class Parser {
 	static fromBuffer<T extends typeof Parser>(this: T, buffer: Buffer) {
 		return new this({
@@ -20,5 +26,12 @@ export class Parser {
 
 	protected uint8(): number {
 		return this.data.getUint8(this.fieldOffset(1))
+	}
+
+	protected uint16(opts?: NumberOptions): number {
+		return this.data.getUint16(
+			this.fieldOffset(2),
+			opts?.endianness === 'little',
+		)
 	}
 }
