@@ -12,7 +12,7 @@
 		"access": "public"
 	},
 	"engines": {
-		"node": ">=10"
+		"node": ">=12"
 	},
 	"dependencies": {
 		"@babel/runtime-corejs3": "^7.9.2"
