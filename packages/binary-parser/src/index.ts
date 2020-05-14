@@ -8,19 +8,19 @@ interface NumberOptions {
 }
 
 export class Parser {
-	static fromBuffer<T extends typeof Parser>(this: T, buffer: Buffer) {
-		return new this({
-			data: new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength),
-		}) as InstanceType<T>
-	}
-
 	protected endianness?: Endianness
 
-	private data: DataView
+	private buffer: Uint8Array
+	private dataView: DataView
 	private offset = 0
 
-	constructor(opts: {data: DataView}) {
-		this.data = opts.data
+	constructor(opts: {buffer: Uint8Array}) {
+		this.buffer = opts.buffer
+		this.dataView = new DataView(
+			opts.buffer.buffer,
+			opts.buffer.byteOffset,
+			opts.buffer.byteLength,
+		)
 	}
 
 	private fieldOffset(length: number) {
@@ -34,11 +34,11 @@ export class Parser {
 	}
 
 	protected uint8(): number {
-		return this.data.getUint8(this.fieldOffset(1))
+		return this.dataView.getUint8(this.fieldOffset(1))
 	}
 
 	protected uint16(opts?: NumberOptions): number {
-		return this.data.getUint16(
+		return this.dataView.getUint16(
 			this.fieldOffset(2),
 			this.isLittleEndian(opts?.endianness),
 		)
