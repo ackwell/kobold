@@ -57,4 +57,20 @@ describe('primitive values', () => {
 		const parsed2 = new Uint16LE({buffer})
 		expect(parsed2.one).toBe(10761)
 	})
+
+	it('string', () => {
+		const encoder = new TextEncoder()
+		const input = encoder.encode('testnull terminated\0test3')
+
+		class StringParser extends Parser {
+			one = this.string({length: 4})
+			two = this.string()
+			three = this.string({length: 5})
+		}
+		const parsed = new StringParser({buffer: input})
+
+		expect(parsed.one).toBe('test')
+		expect(parsed.two).toBe('null terminated')
+		expect(parsed.three).toBe('test3')
+	})
 })

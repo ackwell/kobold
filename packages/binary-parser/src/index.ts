@@ -7,6 +7,11 @@ interface NumberOptions {
 	endianness?: Endianness
 }
 
+interface StringOptions {
+	encoding?: string
+	length?: number
+}
+
 export class Parser {
 	protected endianness?: Endianness
 
@@ -41,6 +46,27 @@ export class Parser {
 		return this.dataView.getUint16(
 			this.fieldOffset(2),
 			this.isLittleEndian(opts?.endianness),
+		)
+	}
+
+	protected string(opts?: StringOptions): string {
+		// TODO: cache decoder?
+		const decoder = new TextDecoder(opts?.encoding)
+
+		// TODO: throw if offset + len > buflen?
+		let length = opts?.length
+		const initialOffset = this.fieldOffset(length ?? 0)
+
+		// If no explicit length was specified, read until we find a null byte
+		if (length == null) {
+			while (this.uint8() !== 0) {
+				// noop
+			}
+			length = this.offset - initialOffset - 1
+		}
+
+		return decoder.decode(
+			this.buffer.subarray(initialOffset, initialOffset + length),
 		)
 	}
 }
