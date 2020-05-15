@@ -21,7 +21,7 @@ describe('field positions', () => {
 	})
 })
 
-describe('primitive values', () => {
+describe('fields', () => {
 	it('uint8', () => {
 		const value = 146
 
@@ -72,5 +72,31 @@ describe('primitive values', () => {
 		expect(parsed.one).toBe('test')
 		expect(parsed.two).toBe('null terminated')
 		expect(parsed.three).toBe('test3')
+	})
+
+	it('struct', () => {
+		const {buffer, dataView} = buildDataView(12)
+		dataView.setUint16(0, 24565)
+		dataView.setUint16(2, 44567, true)
+		dataView.setUint16(4, 32345)
+		dataView.setUint16(6, 52345, true)
+		dataView.setUint16(8, 2356)
+		dataView.setUint16(10, 45161, true)
+
+		class SubStruct extends Parser {
+			one = this.uint16()
+			two = this.uint16({endianness: Endianness.LITTLE})
+		}
+
+		class Struct extends Parser {
+			one = this.struct({type: SubStruct})
+			two = this.struct({type: SubStruct})
+			three = this.struct({type: SubStruct})
+		}
+		const parsed = new Struct({buffer})
+
+		expect(parsed.one).toMatchObject({one: 24565, two: 44567})
+		expect(parsed.two).toMatchObject({one: 32345, two: 52345})
+		expect(parsed.three).toMatchObject({one: 2356, two: 45161})
 	})
 })
