@@ -8,7 +8,7 @@ function buildDataView(size: number) {
 	}
 }
 
-describe('field positions', () => {
+describe('functionality', () => {
 	it('advances after reading a field', () => {
 		class Advances extends Parser {
 			one = this.uint8()
@@ -18,6 +18,53 @@ describe('field positions', () => {
 
 		expect(parsed.one).toBe(1)
 		expect(parsed.two).toBe(2)
+	})
+
+	it('calculates the parsed size of a struct', () => {
+		const {buffer, dataView} = buildDataView(9)
+		dataView.setUint8(0, 10)
+		dataView.setUint16(1, 2471)
+		dataView.setUint16(3, 9142)
+		dataView.setUint8(5, 72)
+		dataView.setUint8(6, 105)
+		dataView.setUint8(7, 33)
+		dataView.setUint8(8, 0)
+
+		class Struct extends Parser {
+			one = this.uint16()
+		}
+
+		class Size extends Parser {
+			one = this.uint8()
+			two = this.array({type: Struct, length: 2})
+			three = this.string()
+		}
+
+		const parsed = new Size({buffer})
+		expect(parsed.getLength()).toBe(9)
+	})
+
+	it('calculates dry run size when possible', () => {
+		class Struct extends Parser {
+			one = this.uint16()
+			two = this.string({length: 10})
+		}
+
+		class Size extends Parser {
+			one = this.uint8()
+			two = this.array({type: 'uint8', length: 2})
+			three = this.struct({type: Struct})
+		}
+
+		expect(Size.getLength()).toBe(15)
+
+		class Uncalculateable extends Parser {
+			one = this.string()
+		}
+
+		expect(() => Uncalculateable.getLength()).toThrow(
+			'Cannot dry run on unknown length string.',
+		)
 	})
 })
 
@@ -99,6 +146,21 @@ describe('fields', () => {
 		expect(parsed.three).toBe('test3')
 	})
 
+	test('primitive', () => {
+		const {buffer, dataView} = buildDataView(2)
+		dataView.setUint8(0, 123)
+		dataView.setUint8(1, 86)
+
+		class Primitive extends Parser {
+			one = this.primitive({type: 'uint8'})
+			two = this.primitive({type: 'uint8'})
+		}
+		const parsed = new Primitive({buffer})
+
+		expect(parsed.one).toBe(123)
+		expect(parsed.two).toBe(86)
+	})
+
 	test('struct', () => {
 		const {buffer, dataView} = buildDataView(12)
 		dataView.setUint16(0, 24565)
@@ -123,21 +185,6 @@ describe('fields', () => {
 		expect(parsed.one).toMatchObject({one: 24565, two: 44567})
 		expect(parsed.two).toMatchObject({one: 32345, two: 52345})
 		expect(parsed.three).toMatchObject({one: 2356, two: 45161})
-	})
-
-	test('primitive', () => {
-		const {buffer, dataView} = buildDataView(2)
-		dataView.setUint8(0, 123)
-		dataView.setUint8(1, 86)
-
-		class Primitive extends Parser {
-			one = this.primitive({type: 'uint8'})
-			two = this.primitive({type: 'uint8'})
-		}
-		const parsed = new Primitive({buffer})
-
-		expect(parsed.one).toBe(123)
-		expect(parsed.two).toBe(86)
 	})
 
 	test('array', () => {

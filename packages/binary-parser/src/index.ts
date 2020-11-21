@@ -1,3 +1,5 @@
+import {strict as assert} from 'assert'
+
 export enum Endianness {
 	BIG,
 	LITTLE,
@@ -38,16 +40,29 @@ type ArrayReturnType<T extends ArrayType> = T extends PrimitiveType
 	? InstanceType<T>
 	: never
 
+type ParserOptions =
+	| {dryRun?: false; buffer: Uint8Array; offset?: number}
+	| {dryRun: true}
+
 export class Parser {
+	static getLength() {
+		const instance = new this({dryRun: true})
+		return instance.getLength()
+	}
+
 	protected endianness?: Endianness
 
-	private buffer: Uint8Array
-	private dataView: DataView
-	private initialOffset: number
+	private buffer?: Uint8Array
+	private dataView?: DataView
+	private initialOffset = 0
 	private relativeOffset = 0
 
 	// TODO: pull ctor opts into an interface or something
-	constructor(opts: {buffer: Uint8Array; offset?: number}) {
+	constructor(opts: ParserOptions) {
+		if (opts.dryRun) {
+			return
+		}
+
 		this.buffer = opts.buffer
 		this.dataView = new DataView(
 			opts.buffer.buffer,
@@ -70,8 +85,7 @@ export class Parser {
 		return this.initialOffset + currentOffset
 	}
 
-	// TODO: public?
-	private getLength() {
+	getLength() {
 		return this.relativeOffset
 	}
 
@@ -80,20 +94,23 @@ export class Parser {
 	}
 
 	protected uint8(): number {
-		return this.dataView.getUint8(this.fieldOffset(1))
+		const offset = this.fieldOffset(1)
+		return this.dataView?.getUint8(offset) ?? 0
 	}
 
 	protected uint16(opts?: NumberOptions): number {
-		return this.dataView.getUint16(
-			this.fieldOffset(2),
-			this.isLittleEndian(opts?.endianness),
+		const offset = this.fieldOffset(2)
+		return (
+			this.dataView?.getUint16(offset, this.isLittleEndian(opts?.endianness)) ??
+			0
 		)
 	}
 
 	protected uint32(opts?: NumberOptions): number {
-		return this.dataView.getUint32(
-			this.fieldOffset(4),
-			this.isLittleEndian(opts?.endianness),
+		const offset = this.fieldOffset(4)
+		return (
+			this.dataView?.getUint32(offset, this.isLittleEndian(opts?.endianness)) ??
+			0
 		)
 	}
 
@@ -107,10 +124,17 @@ export class Parser {
 
 		// If no explicit length was specified, read until we find a null byte
 		if (length == null) {
+			// If there's no buffer, we can't sanely calculate a length
+			assert(this.buffer != null, 'Cannot dry run on unknown length string.')
+
 			while (this.uint8() !== 0) {
 				// noop
 			}
 			length = this.relativeOffset - initialOffset - 1
+		}
+
+		if (this.buffer == null) {
+			return ''
 		}
 
 		return decoder.decode(
@@ -134,10 +158,12 @@ export class Parser {
 	protected struct<T extends typeof Parser>(
 		opts: StructOptions<T>,
 	): InstanceType<T> {
-		const struct = new opts.type({
-			buffer: this.buffer,
-			offset: this.fieldOffset(),
-		}) as InstanceType<T>
+		const ctorOpts: ParserOptions =
+			this.buffer != null
+				? {buffer: this.buffer, offset: this.fieldOffset()}
+				: {dryRun: true}
+
+		const struct = new opts.type(ctorOpts) as InstanceType<T>
 
 		this.seek(struct.getLength())
 
