@@ -22,7 +22,7 @@ describe('field positions', () => {
 })
 
 describe('fields', () => {
-	it('uint8', () => {
+	test('uint8', () => {
 		const value = 146
 
 		class Uint8 extends Parser {
@@ -33,7 +33,7 @@ describe('fields', () => {
 		expect(parsed.test).toBe(value)
 	})
 
-	it('uint16', () => {
+	test('uint16', () => {
 		const {buffer, dataView} = buildDataView(6)
 		dataView.setUint16(0, 2346)
 		dataView.setUint16(2, 8678)
@@ -58,7 +58,7 @@ describe('fields', () => {
 		expect(parsed2.one).toBe(10761)
 	})
 
-	it('string', () => {
+	test('string', () => {
 		const encoder = new TextEncoder()
 		const input = encoder.encode('testnull terminated\0test3')
 
@@ -74,7 +74,7 @@ describe('fields', () => {
 		expect(parsed.three).toBe('test3')
 	})
 
-	it('struct', () => {
+	test('struct', () => {
 		const {buffer, dataView} = buildDataView(12)
 		dataView.setUint16(0, 24565)
 		dataView.setUint16(2, 44567, true)
@@ -98,5 +98,20 @@ describe('fields', () => {
 		expect(parsed.one).toMatchObject({one: 24565, two: 44567})
 		expect(parsed.two).toMatchObject({one: 32345, two: 52345})
 		expect(parsed.three).toMatchObject({one: 2356, two: 45161})
+	})
+
+	test('primitive', () => {
+		const {buffer, dataView} = buildDataView(2)
+		dataView.setUint8(0, 123)
+		dataView.setUint8(1, 86)
+
+		class Primitive extends Parser {
+			one = this.primitive({type: 'uint8'})
+			two = this.primitive({type: 'uint8'})
+		}
+		const parsed = new Primitive({buffer})
+
+		expect(parsed.one).toBe(123)
+		expect(parsed.two).toBe(86)
 	})
 })

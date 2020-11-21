@@ -12,6 +12,16 @@ interface StringOptions {
 	length?: number
 }
 
+type PrimitiveType = 'uint8'
+
+type PrimitiveReturnType<T extends PrimitiveType> = {
+	uint8: number
+}[T]
+
+interface PrimitiveOptions<T extends PrimitiveType> {
+	type: T
+}
+
 interface StructOptions<T extends typeof Parser> {
 	type: T
 }
@@ -89,6 +99,19 @@ export class Parser {
 		)
 	}
 
+	protected primitive<T extends PrimitiveType>(
+		opts: PrimitiveOptions<T>,
+	): PrimitiveReturnType<T> {
+		type R = PrimitiveReturnType<T>
+		const type = opts.type as PrimitiveType
+		switch (type) {
+			case 'uint8':
+				return this.uint8() as R
+			default:
+				throw new UnreachableException(type)
+		}
+	}
+
 	protected struct<T extends typeof Parser>(
 		opts: StructOptions<T>,
 	): InstanceType<T> {
@@ -100,5 +123,11 @@ export class Parser {
 		this.seek(struct.getLength())
 
 		return struct
+	}
+}
+
+class UnreachableException extends Error {
+	constructor(value: never) {
+		super(`Recieved unexpected value ${value}`)
 	}
 }
