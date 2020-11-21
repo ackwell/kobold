@@ -6,11 +6,10 @@ import zlib from 'zlib'
 import {
 	fileInfoParser,
 	FileType,
-	blockInfoParser,
-	BlockInfo,
 	sqPackIndexParser,
 	sqPackIndex2Parser,
 	BlockHeader,
+	BlockInfo,
 } from './parser'
 import {Path} from './path'
 import {assert} from './utilities'
@@ -147,7 +146,7 @@ export class Category {
 			'TODO: Better handling for file types',
 		)
 
-		const blockInfoSize = blockInfoParser.sizeOf()
+		const blockInfoSize = BlockInfo.getLength()
 		const blockInfoGroupSize = blockInfoSize * fileInfo.blockCount
 		const {buffer: blockInfoBuffer} = await asyncReadBuffer(
 			fd,
@@ -157,11 +156,11 @@ export class Category {
 
 		const blockInfos = []
 		for (let i = 0; i < fileInfo.blockCount; i++) {
-			const begin = blockInfoSize * i
 			blockInfos.push(
-				blockInfoParser.parse(
-					blockInfoBuffer.subarray(begin, begin + blockInfoSize),
-				),
+				new BlockInfo({
+					buffer: blockInfoBuffer,
+					offset: blockInfoSize * i,
+				}),
 			)
 		}
 

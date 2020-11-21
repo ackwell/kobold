@@ -18,12 +18,12 @@ export const fileInfoParser = new Parser()
 	.uint32('blockCount')
 export type SqPackFileInfo = Parsed<typeof fileInfoParser>
 
-export const blockInfoParser = new Parser()
-	.endianess('little')
-	.uint32('offset')
-	.uint16('size')
-	.uint16('uncompressedSize')
-export type BlockInfo = Parsed<typeof blockInfoParser>
+export class BlockInfo extends KoboldParser {
+	endianness = Endianness.LITTLE
+	offset = this.uint32()
+	size = this.uint16()
+	uncompressedSize = this.uint16()
+}
 
 export class BlockHeader extends KoboldParser {
 	endianness = Endianness.LITTLE
