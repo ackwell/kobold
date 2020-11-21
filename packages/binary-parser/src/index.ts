@@ -22,7 +22,7 @@ export class Parser {
 	private buffer: Uint8Array
 	private dataView: DataView
 	private initialOffset: number
-	private offset: number
+	private relativeOffset = 0
 
 	// TODO: pull ctor opts into an interface or something
 	constructor(opts: {buffer: Uint8Array; offset?: number}) {
@@ -33,24 +33,24 @@ export class Parser {
 			opts.buffer.byteLength,
 		)
 
-		this.offset = this.initialOffset = opts.offset ?? 0
+		this.initialOffset = opts.offset ?? 0
 	}
 
 	private seek(distance: number) {
 		// TODO: throw on > buf len?
-		this.offset += distance
+		this.relativeOffset += distance
 	}
 
 	private fieldOffset(length?: number) {
 		// TODO: handle more fancy position opts
-		const currentOffset = this.offset
+		const currentOffset = this.relativeOffset
 		this.seek(length ?? 0)
-		return currentOffset
+		return this.initialOffset + currentOffset
 	}
 
 	// TODO: public?
 	private getLength() {
-		return this.offset - this.initialOffset
+		return this.relativeOffset
 	}
 
 	private isLittleEndian(override?: Endianness) {
@@ -81,7 +81,7 @@ export class Parser {
 			while (this.uint8() !== 0) {
 				// noop
 			}
-			length = this.offset - initialOffset - 1
+			length = this.relativeOffset - initialOffset - 1
 		}
 
 		return decoder.decode(
