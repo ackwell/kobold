@@ -114,4 +114,17 @@ describe('fields', () => {
 		expect(parsed.one).toBe(123)
 		expect(parsed.two).toBe(86)
 	})
+
+	test('array', () => {
+		const {buffer, dataView} = buildDataView(2)
+		dataView.setUint8(0, 95)
+		dataView.setUint8(1, 234)
+
+		class ArrayParser extends Parser {
+			one = this.array({type: 'uint8', length: 2})
+		}
+		const parsed = new ArrayParser({buffer})
+
+		expect(parsed.one).toEqual([95, 234])
+	})
 })

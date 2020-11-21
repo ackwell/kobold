@@ -14,17 +14,29 @@ interface StringOptions {
 
 type PrimitiveType = 'uint8'
 
-type PrimitiveReturnType<T extends PrimitiveType> = {
-	uint8: number
-}[T]
-
 interface PrimitiveOptions<T extends PrimitiveType> {
 	type: T
 }
 
+type PrimitiveReturnType<T extends PrimitiveType> = {
+	uint8: number
+}[T]
+
 interface StructOptions<T extends typeof Parser> {
 	type: T
 }
+
+type ArrayType = typeof Parser | PrimitiveType
+interface ArrayOptions<T extends ArrayType> {
+	type: T
+	length: number
+}
+
+type ArrayReturnType<T extends ArrayType> = T extends PrimitiveType
+	? PrimitiveReturnType<T>
+	: T extends typeof Parser
+	? InstanceType<T>
+	: never
 
 export class Parser {
 	protected endianness?: Endianness
@@ -123,6 +135,25 @@ export class Parser {
 		this.seek(struct.getLength())
 
 		return struct
+	}
+
+	protected array<T extends ArrayType>(
+		opts: ArrayOptions<T>,
+	): ArrayReturnType<T>[] {
+		type R = ArrayReturnType<T>
+
+		const type = opts.type as ArrayType
+		const readItem =
+			typeof type === 'string'
+				? () => this.primitive({type}) as R
+				: () => this.struct({type}) as R
+
+		const result: R[] = []
+		for (let i = 0; i < opts.length; i++) {
+			result.push(readItem())
+		}
+
+		return result
 	}
 }
 
