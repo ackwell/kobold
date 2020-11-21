@@ -1,3 +1,4 @@
+import {Endianness, Parser as KoboldParser} from '@kobold/binary-parser'
 import {Parser} from 'binary-parser'
 import {Parsed} from './shared'
 
@@ -24,10 +25,10 @@ export const blockInfoParser = new Parser()
 	.uint16('uncompressedSize')
 export type BlockInfo = Parsed<typeof blockInfoParser>
 
-export const blockHeaderParser = new Parser()
-	.endianess('little')
-	.uint32('size')
-	.skip(4) // uint32 unknown1
-	.uint32('compressedSize')
-	.uint32('uncompressedSize')
-export type BlockHeader = Parsed<typeof blockHeaderParser>
+export class BlockHeader extends KoboldParser {
+	endianness = Endianness.LITTLE
+	size = this.uint32()
+	unknown1 = this.uint32()
+	compressedSize = this.uint32()
+	uncompressedSize = this.uint32()
+}

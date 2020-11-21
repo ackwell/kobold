@@ -7,10 +7,10 @@ import {
 	fileInfoParser,
 	FileType,
 	blockInfoParser,
-	blockHeaderParser,
 	BlockInfo,
 	sqPackIndexParser,
 	sqPackIndex2Parser,
+	BlockHeader,
 } from './parser'
 import {Path} from './path'
 import {assert} from './utilities'
@@ -184,19 +184,19 @@ export class Category {
 		fd: number,
 		baseOffset: number,
 	) {
-		const {buffer: blockBuffer} = await asyncReadBuffer(
+		const {buffer} = await asyncReadBuffer(
 			fd,
 			blockInfo.size,
 			baseOffset + blockInfo.offset,
 		)
 
-		const blockHeader = blockHeaderParser.parse(blockBuffer)
+		const blockHeader = new BlockHeader({buffer})
 
 		// Adam is using 32000 as some marker for uncompressed blocks - asserting here so if it is, i can inspect what's going on for curiosity's sake
 		assert(blockHeader.compressedSize !== 32000)
 
 		// const blockHeaderSize = blockHeaderParser.sizeOf()
-		const blockData = blockBuffer.subarray(
+		const blockData = buffer.subarray(
 			blockHeader.size,
 			blockHeader.size + blockHeader.compressedSize,
 		)
