@@ -58,7 +58,7 @@ export class Parser {
 		this.initialOffset = opts.offset ?? 0
 	}
 
-	private seek(distance: number) {
+	protected seek(distance: number) {
 		// TODO: throw on > buf len?
 		this.relativeOffset += distance
 	}
@@ -86,6 +86,13 @@ export class Parser {
 	protected uint16(opts?: NumberOptions): number {
 		return this.dataView.getUint16(
 			this.fieldOffset(2),
+			this.isLittleEndian(opts?.endianness),
+		)
+	}
+
+	protected uint32(opts?: NumberOptions): number {
+		return this.dataView.getUint32(
+			this.fieldOffset(4),
 			this.isLittleEndian(opts?.endianness),
 		)
 	}

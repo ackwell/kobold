@@ -58,6 +58,31 @@ describe('fields', () => {
 		expect(parsed2.one).toBe(10761)
 	})
 
+	test('uint32', () => {
+		const {buffer, dataView} = buildDataView(12)
+		dataView.setUint32(0, 72424)
+		dataView.setUint32(4, 34685232)
+		dataView.setUint32(8, 1234445, true)
+
+		class Uint32 extends Parser {
+			one = this.uint32()
+			two = this.uint32({endianness: Endianness.BIG})
+			three = this.uint32({endianness: Endianness.LITTLE})
+		}
+		const parsed = new Uint32({buffer})
+
+		expect(parsed.one).toBe(72424)
+		expect(parsed.two).toBe(34685232)
+		expect(parsed.three).toBe(1234445)
+
+		class Uint32LE extends Parser {
+			protected endianness = Endianness.LITTLE
+			one = this.uint32()
+		}
+		const parsed2 = new Uint32LE({buffer})
+		expect(parsed2.one).toBe(3894018304)
+	})
+
 	test('string', () => {
 		const encoder = new TextEncoder()
 		const input = encoder.encode('testnull terminated\0test3')
