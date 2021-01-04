@@ -1,6 +1,6 @@
 {
 	"name": "@kobold/xiv",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Automated Kobold configuration for Final Fantasy XIV",
 	"keywords": ["sqpack", "ffxiv", "final fantasy xiv", "parser"],
 	"author": "ackwell (https://ackwell.com.au)",

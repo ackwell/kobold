@@ -33,8 +33,11 @@ const tryPaths = [
 	'C:\\Program Files (x86)\\Steam\\steamapps\\common\\FINAL FANTASY XIV - A Realm Reborn',
 	'C:\\Program Files (x86)\\FINAL FANTASY XIV - A Realm Reborn',
 	'C:\\Program Files (x86)\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn',
-]
-const sqPackDir = 'game\\sqpack'
+].flatMap(tryPath => [
+	tryPath,
+	tryPath.split(path.win32.sep).join(path.posix.sep).replace('C:', '/mnt/c'),
+])
+const sqPackDir = path.join('game', 'sqpack')
 
 export async function buildKoboldXIV(opts?: {path?: string}) {
 	const sqPackPath = await getSqPackPath(opts?.path)
