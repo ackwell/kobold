@@ -1,4 +1,4 @@
-import {ExcelHeader, ColumnDataType, ColumnDefinition, Variant} from './files'
+import {ColumnDataType, ColumnDefinition, ExcelHeader, Variant} from './files'
 import {assert} from './utilities'
 
 interface RowConstructorOptions {
@@ -30,6 +30,10 @@ export abstract class Row {
 	}
 	static set sheet(value) {
 		this._sheet = value
+	}
+
+	public get columnsCount(): number {
+		return this.sheetHeader.columns.length
 	}
 
 	index: number
@@ -89,9 +93,44 @@ export abstract class Row {
 		return subrowOffset + SUBROW_HEADER_SIZE + baseOffset
 	}
 
-	protected unknown(opts?: ColumnSeekOptions) {
-		// NOOP - retrieve the column definition to advance to the next column position
-		this.getColumnDefinition(opts)
+	protected unknown(
+		opts?: ColumnSeekOptions,
+	): {type: ColumnDataType; value: string | number | bigint | boolean | null} {
+		const definition = this.getColumnDefinition(opts)
+		let value: string | number | bigint | boolean | null
+		switch (definition.dataType) {
+			case ColumnDataType.BOOLEAN:
+			case ColumnDataType.PACKED_BOOL_0:
+			case ColumnDataType.PACKED_BOOL_1:
+			case ColumnDataType.PACKED_BOOL_2:
+			case ColumnDataType.PACKED_BOOL_3:
+			case ColumnDataType.PACKED_BOOL_4:
+			case ColumnDataType.PACKED_BOOL_5:
+			case ColumnDataType.PACKED_BOOL_6:
+			case ColumnDataType.PACKED_BOOL_7:
+				value = this.boolean(opts)
+				break
+			case ColumnDataType.STRING:
+				value = this.string(opts)
+				break
+			case ColumnDataType.INT_8:
+			case ColumnDataType.UINT_8:
+			case ColumnDataType.INT_16:
+			case ColumnDataType.UINT_16:
+			case ColumnDataType.INT_32:
+			case ColumnDataType.UINT_32:
+			case ColumnDataType.FLOAT_32:
+				value = this.number(opts)
+				break
+			case ColumnDataType.INT_64:
+			case ColumnDataType.UINT_64:
+				value = this.bigint(opts)
+				break
+			default:
+				value = null
+				break
+		}
+		return {type: definition.dataType, value}
 	}
 
 	protected string(opts?: ColumnSeekOptions) {

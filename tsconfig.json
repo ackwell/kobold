@@ -13,6 +13,6 @@
 		"allowSyntheticDefaultImports": true,
 		"isolatedModules": true,
 
-		"incremental": true,
+		"incremental": true
 	}
 }
