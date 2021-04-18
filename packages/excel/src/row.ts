@@ -1,5 +1,5 @@
 import {ColumnDataType, ColumnDefinition, ExcelHeader, Variant} from './files'
-import {assert} from './utilities'
+import { assert, UnreachableError } from "./utilities";
 
 interface RowConstructorOptions {
 	index: number
@@ -95,9 +95,9 @@ export abstract class Row {
 
 	protected unknown(
 		opts?: ColumnSeekOptions,
-	): {type: ColumnDataType; value: string | number | bigint | boolean | null} {
+	): {type: ColumnDataType; value: string | number | bigint | boolean} {
 		const definition = this.getColumnDefinition(opts)
-		let value: string | number | bigint | boolean | null
+		let value: string | number | bigint | boolean
 		switch (definition.dataType) {
 			case ColumnDataType.BOOLEAN:
 			case ColumnDataType.PACKED_BOOL_0:
@@ -127,8 +127,7 @@ export abstract class Row {
 				value = this.bigint(opts)
 				break
 			default:
-				value = null
-				break
+				throw new UnreachableError(definition.dataType)
 		}
 		return {type: definition.dataType, value}
 	}
