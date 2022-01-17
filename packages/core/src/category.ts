@@ -192,15 +192,15 @@ export class Category {
 
 		const blockHeader = blockHeaderParser.parse(blockBuffer)
 
-		// Adam is using 32000 as some marker for uncompressed blocks - asserting here so if it is, i can inspect what's going on for curiosity's sake
-		assert(blockHeader.compressedSize !== 32000)
-
-		// const blockHeaderSize = blockHeaderParser.sizeOf()
 		const blockData = blockBuffer.subarray(
 			blockHeader.size,
 			blockHeader.size + blockHeader.compressedSize,
 		)
 
-		return async.zlib.inflateRaw(blockData) as Promise<Buffer>
+		// If it's compressed, handle it as such
+		if (blockHeader.compressedSize !== 32000) {
+			return async.zlib.inflateRaw(blockData) as Promise<Buffer>
+		}
+		return Promise.resolve(blockData)
 	}
 }
