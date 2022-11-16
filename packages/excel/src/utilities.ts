@@ -7,3 +7,9 @@ export function assert(
 ): asserts condition {
 	nodeAssert(condition, message)
 }
+
+export class UnreachableError extends Error {
+	constructor(value: never) {
+		super(`Unreachable value received: ${value}`)
+	}
+}
