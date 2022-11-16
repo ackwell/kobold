@@ -1,5 +1,5 @@
 import {ColumnDataType, ColumnDefinition, ExcelHeader, Variant} from './files'
-import { assert, UnreachableError } from "./utilities";
+import {assert, UnreachableError} from './utilities'
 
 interface RowConstructorOptions {
 	index: number
@@ -10,6 +10,7 @@ interface RowConstructorOptions {
 
 export interface RowConstructor<T extends Row> {
 	new (opts: RowConstructorOptions): T
+
 	sheet: string
 }
 
@@ -28,6 +29,7 @@ export abstract class Row {
 		}
 		throw new Error(`Missing \`static sheet\` declaration on ${this.name}.`)
 	}
+
 	static set sheet(value) {
 		this._sheet = value
 	}
@@ -95,9 +97,8 @@ export abstract class Row {
 
 	protected unknown(
 		opts?: ColumnSeekOptions,
-	): {type: ColumnDataType; value: string | number | bigint | boolean} {
+	): string | number | bigint | boolean | null {
 		const definition = this.getColumnDefinition(opts)
-		let value: string | number | bigint | boolean
 		switch (definition.dataType) {
 			case ColumnDataType.BOOLEAN:
 			case ColumnDataType.PACKED_BOOL_0:
@@ -108,11 +109,9 @@ export abstract class Row {
 			case ColumnDataType.PACKED_BOOL_5:
 			case ColumnDataType.PACKED_BOOL_6:
 			case ColumnDataType.PACKED_BOOL_7:
-				value = this.boolean(opts)
-				break
+				return this.boolean(opts)
 			case ColumnDataType.STRING:
-				value = this.string(opts)
-				break
+				return this.string(opts)
 			case ColumnDataType.INT_8:
 			case ColumnDataType.UINT_8:
 			case ColumnDataType.INT_16:
@@ -120,16 +119,13 @@ export abstract class Row {
 			case ColumnDataType.INT_32:
 			case ColumnDataType.UINT_32:
 			case ColumnDataType.FLOAT_32:
-				value = this.number(opts)
-				break
+				return this.number(opts)
 			case ColumnDataType.INT_64:
 			case ColumnDataType.UINT_64:
-				value = this.bigint(opts)
-				break
+				return this.bigint(opts)
 			default:
 				throw new UnreachableError(definition.dataType)
 		}
-		return {type: definition.dataType, value}
 	}
 
 	protected string(opts?: ColumnSeekOptions) {
