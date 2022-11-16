@@ -1,8 +1,14 @@
 {
 	"name": "@kobold/excel",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Kobold excel data handler",
-	"keywords": ["sqpack", "ffxiv", "final fantasy xiv", "parser", "exd"],
+	"keywords": [
+		"sqpack",
+		"ffxiv",
+		"final fantasy xiv",
+		"parser",
+		"exd"
+	],
 	"author": "ackwell (https://ackwell.com.au)",
 	"repository": "ackwell/kobold",
 	"license": "MIT",
