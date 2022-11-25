@@ -108,7 +108,7 @@ export class Sheet<T extends Row> {
 	}
 
 	// TODO: Probably should rename this given how much logic i'm throwing in
-	private async getHeader() {
+	public async getHeader() {
 		if (this.headerCache == null) {
 			const path = `exd/${this.RowClass.sheet}.exh`
 			this.headerCache = await this.kobold.getFile(path, ExcelHeader)
