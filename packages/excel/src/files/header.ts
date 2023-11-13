@@ -113,7 +113,7 @@ export class ExcelHeader extends File {
 		assert(this.variant in Variant)
 		this.rowCount = parsed.header.rowCount
 
-		this.columns = parsed.columns
+		this.columns = parsed.columns.sort((a, b) => a.offset - b.offset)
 		this.columns.forEach(column => assert(column.dataType in ColumnDataType))
 
 		this.pages = parsed.pages
