@@ -1,6 +1,6 @@
 import {Kobold} from '@kobold/core'
 import {ExcelList, Language} from './files'
-import {RowConstructor, Row} from './row'
+import {Row, RowConstructor} from './row'
 import {Sheet} from './sheet'
 import {assert} from './utilities'
 
@@ -11,7 +11,7 @@ export class Excel {
 	private kobold: Kobold
 	private defaultLanguage?: Language
 	private rootListCache?: ExcelList
-	private sheetCache = new WeakMap<RowConstructor<any>, Sheet<any>>()
+	private sheetCache = new Map<string, Sheet<any>>()
 
 	constructor(opts: {kobold: Kobold; language?: Language}) {
 		this.kobold = opts.kobold
@@ -22,7 +22,9 @@ export class Excel {
 		RowClass: RowConstructor<T>,
 		opts?: {language?: Language},
 	): Promise<Sheet<T>> {
-		let sheet = this.sheetCache.get(RowClass)
+		const language = opts?.language ?? this.defaultLanguage ?? fallbackLanguage
+		const cacheKey = `${RowClass.sheet}:${language}`
+		let sheet = this.sheetCache.get(cacheKey)
 		if (sheet != null) {
 			return sheet
 		}
@@ -35,15 +37,13 @@ export class Excel {
 			`Sheet ${sheetName} is not listed in the root excel list.`,
 		)
 
-		const language = opts?.language ?? this.defaultLanguage ?? fallbackLanguage
-
 		sheet = new Sheet({
 			kobold: this.kobold,
 			RowClass,
 			language,
 		})
 
-		this.sheetCache.set(RowClass, sheet)
+		this.sheetCache.set(cacheKey, sheet)
 
 		return sheet
 	}
