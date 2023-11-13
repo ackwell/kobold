@@ -1,8 +1,13 @@
 {
 	"name": "@kobold/core",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Kobold core",
-	"keywords": ["sqpack", "ffxiv", "final fantasy fix", "parser"],
+	"keywords": [
+		"sqpack",
+		"ffxiv",
+		"final fantasy fix",
+		"parser"
+	],
 	"author": "ackwell (https://ackwell.com.au)",
 	"repository": "ackwell/kobold",
 	"license": "MIT",

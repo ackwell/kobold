@@ -14,7 +14,7 @@ export interface RowConstructor<T extends Row> {
 	sheet: string
 }
 
-type ColumnSeekOptions =
+export type ColumnSeekOptions =
 	| {column: number; offset?: undefined}
 	| {offset: number; column?: undefined}
 
@@ -34,15 +34,11 @@ export abstract class Row {
 		this._sheet = value
 	}
 
-	public get columnsCount(): number {
-		return this.sheetHeader.columns.length
-	}
-
 	index: number
 	subIndex: number
 
-	private sheetHeader: ExcelHeader
-	private data: Buffer
+	protected sheetHeader: ExcelHeader
+	protected data: Buffer
 	private currentColumn = 0
 
 	// TODO: Consider moving row parsing logic to an external class so consumers aren't dodging all the private members
@@ -54,7 +50,7 @@ export abstract class Row {
 		this.data = opts.data
 	}
 
-	private getColumnDefinition(opts?: ColumnSeekOptions) {
+	protected getColumnDefinition(opts?: ColumnSeekOptions) {
 		if (opts?.offset != null) {
 			const index = this.sheetHeader.columns.findIndex(
 				column => column.offset === opts.offset,

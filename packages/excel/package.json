@@ -1,8 +1,14 @@
 {
 	"name": "@kobold/excel",
-	"version": "0.0.2",
+	"version": "0.0.4",
 	"description": "Kobold excel data handler",
-	"keywords": ["sqpack", "ffxiv", "final fantasy xiv", "parser", "exd"],
+	"keywords": [
+		"sqpack",
+		"ffxiv",
+		"final fantasy xiv",
+		"parser",
+		"exd"
+	],
 	"author": "ackwell (https://ackwell.com.au)",
 	"repository": "ackwell/kobold",
 	"license": "MIT",
@@ -15,7 +21,7 @@
 		"node": ">=10"
 	},
 	"peerDependencies": {
-		"@kobold/core": "^0.0.1"
+		"@kobold/core": "^0.0.2"
 	},
 	"dependencies": {
 		"@babel/runtime-corejs3": "^7.9.2",
@@ -23,6 +29,6 @@
 		"binary-parser": "^1.6.2"
 	},
 	"devDependencies": {
-		"@kobold/core": "^0.0.1"
+		"@kobold/core": "^0.0.2"
 	}
 }
